@@ -10,3 +10,4 @@ Available infrastructure entry points:
 - `python -m scripts.validate_config <config>`
 - `python -m scripts.create_run <config>`
 - `python -m scripts.train_reliability <training-config>`
+- `python -m scripts.export_diagnostics outputs/<run-name>`

@@ -137,6 +137,38 @@ feature schema, dataset metadata, resolved configuration, environment manifest,
 metrics, and training history. The included logistic regression is an auditable
 baseline, not a claimed research result.
 
+### Cloud logging and remote diagnosis
+
+Training writes both human- and machine-readable records:
+
+```text
+outputs/<run>/
+├── config.yaml
+├── manifest.json
+├── model.npz
+├── metrics.json
+├── history.json
+└── logs/
+    ├── train.log
+    ├── metrics.jsonl
+    ├── events.jsonl
+    └── failure.json       # only when an exception occurs
+```
+
+JSONL records are flushed on every write so useful evidence survives cloud
+preemption. To publish a small diagnostic report without checkpoints or raw
+data:
+
+```bash
+python -m scripts.export_diagnostics outputs/<run-name>
+git add reports/<run-name>
+git commit -m "Add diagnostics for <run-name>"
+git push
+```
+
+The trainer never pushes automatically and never receives a GitHub token. See
+[`docs/cloud_training.md`](docs/cloud_training.md) for the end-to-end workflow.
+
 ## Dataset storage
 
 For continuous YCB-Video tracking, the sparse 900-frame BOP test subset is not
@@ -208,6 +240,7 @@ passes. Proposed commands and acceptance criteria are in
 - [Environment audit](docs/environment_audit.md)
 - [Open questions and decision gates](docs/open_questions.md)
 - [Docker development and GPU setup](docs/docker.md)
+- [Cloud training, logging, and diagnosis](docs/cloud_training.md)
 
 ## License
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping, Optional
+from typing import Any, Callable, Mapping, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -67,11 +67,16 @@ class ReliabilityTrainer:
     def __init__(self, model: TrainableReliabilityModel):
         self.model = model
 
-    def run(self, dataset: FeatureDataset, split: SequenceSplit) -> TrainingResult:
+    def run(
+        self,
+        dataset: FeatureDataset,
+        split: SequenceSplit,
+        callback: Optional[Callable[[int, Mapping[str, float]], None]] = None,
+    ) -> TrainingResult:
         dataset.validate()
         split.validate(dataset.sequence_ids)
         train = dataset.subset(split.train)
-        history = self.model.fit(train.features, train.labels)
+        history = self.model.fit(train.features, train.labels, callback=callback)
         return TrainingResult(
             history=history,
             train_metrics=binary_metrics(

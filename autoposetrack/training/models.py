@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Mapping, Optional
+from typing import Callable, Mapping, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -12,7 +12,12 @@ import numpy.typing as npt
 
 class TrainableReliabilityModel(ABC):
     @abstractmethod
-    def fit(self, features: npt.ArrayLike, labels: npt.ArrayLike) -> Mapping[str, list[float]]:
+    def fit(
+        self,
+        features: npt.ArrayLike,
+        labels: npt.ArrayLike,
+        callback: Optional[Callable[[int, Mapping[str, float]], None]] = None,
+    ) -> Mapping[str, list[float]]:
         pass
 
     @abstractmethod
@@ -39,7 +44,12 @@ class LogisticRegressionGD(TrainableReliabilityModel):
         clipped = np.clip(logits, -40.0, 40.0)
         return 1.0 / (1.0 + np.exp(-clipped))
 
-    def fit(self, features: npt.ArrayLike, labels: npt.ArrayLike) -> Mapping[str, list[float]]:
+    def fit(
+        self,
+        features: npt.ArrayLike,
+        labels: npt.ArrayLike,
+        callback: Optional[Callable[[int, Mapping[str, float]], None]] = None,
+    ) -> Mapping[str, list[float]]:
         x = np.asarray(features, dtype=np.float64)
         y = np.asarray(labels, dtype=np.float64)
         if x.ndim != 2 or y.shape != (len(x),) or len(x) == 0:
@@ -58,7 +68,7 @@ class LogisticRegressionGD(TrainableReliabilityModel):
         self.weights = np.zeros(x.shape[1], dtype=np.float64)
         self.bias = 0.0
         losses: list[float] = []
-        for _ in range(self.epochs):
+        for epoch in range(self.epochs):
             probabilities = self._sigmoid(normalized @ self.weights + self.bias)
             error = probabilities - y
             self.weights -= self.learning_rate * (
@@ -71,6 +81,8 @@ class LogisticRegressionGD(TrainableReliabilityModel):
                 + (1.0 - y) * np.log(1.0 - probabilities + epsilon)
             ) + 0.5 * self.l2 * float(self.weights @ self.weights)
             losses.append(float(loss))
+            if callback is not None:
+                callback(epoch, {"loss": float(loss)})
         return {"train_loss": losses}
 
     def predict_probability(self, features: npt.ArrayLike) -> npt.NDArray[np.float64]:
