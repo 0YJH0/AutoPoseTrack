@@ -16,6 +16,9 @@ Captured: 2026-09-25 (Asia/Shanghai)
 | GCC | 11.4.0 |
 | Git | 2.34.1 |
 | GPU | **Unknown/unavailable**: NVML reports GPU access blocked by OS |
+| WSL GPU device | `/dev/dxg` is absent; CUDA compute is unavailable |
+| CUDA toolkit | `nvcc` 11.8 is installed; this does not imply GPU access |
+| Docker | CLI unavailable; Docker Desktop WSL integration is not enabled |
 | Repository state | Empty scaffold at audit start; `.git` is not a valid Git repository |
 
 ## Re-run commands
@@ -37,6 +40,8 @@ git status --short --branch
 ## Consequences
 
 - No CUDA, VRAM, driver, or baseline runtime claim can currently be verified.
+- Docker and GPU containers cannot run until Docker Desktop integration and the
+  WSL GPU device are restored; see `docs/docker.md`.
 - The existing Python 3.9 base environment must not be reused as the research
   environment; FoundationPose upstream currently documents a distinct Python
   environment and compiled CUDA dependencies.
@@ -44,4 +49,3 @@ git status --short --branch
   and submodules cannot be used until repository initialization is resolved.
 - Sixteen GiB host RAM may constrain parallel data loading and template caches;
   measure peak host/GPU memory during the smoke test rather than guessing.
-

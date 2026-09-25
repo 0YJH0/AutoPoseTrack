@@ -45,6 +45,19 @@ conda activate autoposetrack
 python -m pytest
 ```
 
+For Docker-based development, Conda is not required inside the container. Build
+the reproducible core environment and run its tests with:
+
+```bash
+docker compose build core
+docker compose run --rm core
+```
+
+Use the `dev` profile for live source edits through a bind mount, and use the
+separate `foundationpose` profile for CUDA dependencies. Full WSL/GPU setup,
+image versioning, volume mounts, and troubleshooting are documented in
+[`docs/docker.md`](docs/docker.md).
+
 Alternatively, in an existing Python 3.9+ environment:
 
 ```bash
@@ -160,6 +173,7 @@ passes. Proposed commands and acceptance criteria are in
 - [Baseline and code audit](docs/baseline_audit.md)
 - [Environment audit](docs/environment_audit.md)
 - [Open questions and decision gates](docs/open_questions.md)
+- [Docker development and GPU setup](docs/docker.md)
 
 ## License
 

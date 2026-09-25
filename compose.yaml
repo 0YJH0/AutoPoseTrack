@@ -1,0 +1,53 @@
+name: autoposetrack
+
+services:
+  core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        AUTPOSETRACK_VERSION: ${AUTPOSETRACK_VERSION:-dev}
+    image: autoposetrack-core:${AUTPOSETRACK_VERSION:-dev}
+    working_dir: /workspace/AutoPoseTrack
+    volumes:
+      - ./outputs:/workspace/AutoPoseTrack/outputs
+      - ${YCBV_ROOT:-./data/ycbv}:/data/ycbv:ro
+    environment:
+      YCBV_ROOT: /data/ycbv
+
+  dev:
+    extends: core
+    profiles: [dev]
+    command: bash
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/workspace/AutoPoseTrack
+      - ${YCBV_ROOT:-./data/ycbv}:/data/ycbv:ro
+
+  foundationpose:
+    profiles: [gpu]
+    build:
+      context: .
+      dockerfile: docker/foundationpose.Dockerfile
+      args:
+        FOUNDATIONPOSE_BASE: ${FOUNDATIONPOSE_BASE:-wenbowen123/foundationpose:latest}
+    image: autoposetrack-foundationpose:${AUTPOSETRACK_VERSION:-dev}
+    working_dir: /workspace/AutoPoseTrack
+    ipc: host
+    volumes:
+      - ./outputs:/workspace/AutoPoseTrack/outputs
+      - ${YCBV_ROOT:-./data/ycbv}:/data/ycbv:ro
+      - ${FOUNDATIONPOSE_WEIGHTS:-./checkpoints/foundationpose}:/workspace/FoundationPose/weights:ro
+    environment:
+      YCBV_ROOT: /data/ycbv
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: bash
+    stdin_open: true
+    tty: true
