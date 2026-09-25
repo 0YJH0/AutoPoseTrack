@@ -15,11 +15,11 @@ Captured: 2026-09-25 (Asia/Shanghai)
 | pip | 21.2.4 |
 | GCC | 11.4.0 |
 | Git | 2.34.1 |
-| GPU | **Unknown/unavailable**: NVML reports GPU access blocked by OS |
-| WSL GPU device | `/dev/dxg` is absent; CUDA compute is unavailable |
+| GPU | NVIDIA GeForce RTX 4060 Laptop GPU, 8188 MiB, driver 576.02 |
+| WSL GPU device | `/dev/dxg` available in ordinary WSL; hidden in restricted command sandbox |
 | CUDA toolkit | `nvcc` 11.8 is installed; this does not imply GPU access |
-| Docker | CLI unavailable; Docker Desktop WSL integration is not enabled |
-| Repository state | Empty scaffold at audit start; `.git` is not a valid Git repository |
+| Docker | Desktop 4.43.1, Engine/CLI 28.3.0; CUDA 12.4.1 container GPU smoke test passed |
+| Repository state | Git repository initialized; `main` tracks GitHub `origin/main` |
 
 ## Re-run commands
 
@@ -39,13 +39,14 @@ git status --short --branch
 
 ## Consequences
 
-- No CUDA, VRAM, driver, or baseline runtime claim can currently be verified.
-- Docker and GPU containers cannot run until Docker Desktop integration and the
-  WSL GPU device are restored; see `docs/docker.md`.
+- GPU and Docker transport are verified, but no FoundationPose accuracy or
+  runtime claim has been measured.
+- Hardware checks from the restricted command sandbox can produce a false
+  negative because device nodes are intentionally hidden; use ordinary WSL.
 - The existing Python 3.9 base environment must not be reused as the research
   environment; FoundationPose upstream currently documents a distinct Python
   environment and compiled CUDA dependencies.
-- The directory is not currently a functional Git worktree, so commit capture
-  and submodules cannot be used until repository initialization is resolved.
+- Git commits and third-party submodules are available; pin each external
+  repository revision before an experiment.
 - Sixteen GiB host RAM may constrain parallel data loading and template caches;
   measure peak host/GPU memory during the smoke test rather than guessing.

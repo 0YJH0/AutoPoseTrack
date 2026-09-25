@@ -1,0 +1,19 @@
+experiment:
+  name: reliability_logreg_ycbv
+  seed: 2027
+data:
+  # Produced later by tracker rollout/recoverable-basin generation. No GT pose
+  # enters this file; only observable features and offline binary labels do.
+  feature_dataset: /REPLACE/WITH/recoverability_features.npz
+split:
+  strategy: sequence_hash
+  validation_fraction: 0.2
+  test_fraction: 0.2
+model:
+  name: logistic_regression_gd
+  learning_rate: 0.05
+  epochs: 500
+  l2: 0.0001
+output:
+  directory: outputs/reliability_logreg_ycbv
+

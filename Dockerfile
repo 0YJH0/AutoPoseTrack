@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM python:3.11-slim-bookworm AS runtime
+FROM python:3.11-slim-bookworm AS base
 
 ARG AUTPOSETRACK_VERSION=dev
 LABEL org.opencontainers.image.title="AutoPoseTrack Core" \
@@ -21,7 +21,7 @@ RUN apt-get update \
 COPY pyproject.toml README.md LICENSE ./
 COPY autoposetrack ./autoposetrack
 RUN python -m pip install --upgrade pip \
-    && python -m pip install ".[dev,viz]"
+    && python -m pip install ".[dev]"
 
 COPY configs ./configs
 COPY docs ./docs
@@ -31,3 +31,7 @@ COPY tests ./tests
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "pytest", "-q"]
 
+FROM base AS training
+RUN python -m pip install ".[train,viz]"
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["python", "-m", "pytest", "-q"]

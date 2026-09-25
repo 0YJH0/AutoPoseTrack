@@ -31,6 +31,10 @@ for the decision and caveats.
   state transitions with multi-frame hysteresis.
 - Strict YAML validation and reproducibility manifest collection.
 - Standard run directory creation without overwriting an existing experiment.
+- Versioned feature-dataset schema, deterministic sequence-level splits, and
+  explicit temporal leakage checks for reliability training.
+- Trainable reliability-model protocol, NumPy logistic-regression baseline,
+  checkpoint metadata, and training CLI ready for future MLP/PyTorch adapters.
 
 FoundationPose and YCB-Video adapters are deliberately not presented as
 implemented until the official upstream demo has passed on a GPU-capable host.
@@ -51,6 +55,13 @@ the reproducible core environment and run its tests with:
 ```bash
 docker compose build core
 docker compose run --rm core
+```
+
+Build the separate training image with optional analysis dependencies:
+
+```bash
+docker compose build training
+docker compose run --rm training
 ```
 
 Use the `dev` profile for live source edits through a bind mount, and use the
@@ -103,6 +114,28 @@ outputs/<experiment_name>/
 
 Run names are immutable: the artifact writer refuses to overwrite an existing
 directory.
+
+## Reliability training interface
+
+Tracker rollouts will write a `FeatureDataset` NPZ containing observable
+features, binary offline recoverability labels, sequence/frame/object IDs,
+feature names, and label-generation metadata. It intentionally excludes GT pose
+matrices. Sequence IDs are mandatory so training, validation, and test frames
+from one video cannot leak across splits.
+
+After generating that dataset, edit
+`configs/experiments/train_reliability_logreg.yaml` and run:
+
+```bash
+docker compose run --rm training \
+  python -m scripts.train_reliability \
+  configs/experiments/train_reliability_logreg.yaml
+```
+
+The command refuses to overwrite an output directory and stores model weights,
+feature schema, dataset metadata, resolved configuration, environment manifest,
+metrics, and training history. The included logistic regression is an auditable
+baseline, not a claimed research result.
 
 ## Dataset storage
 

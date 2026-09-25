@@ -3,7 +3,12 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from autoposetrack.contracts import FrameObservation, ModelReference, PoseEstimate, PoseMode
+from autoposetrack.contracts import (
+    FrameObservation,
+    ModelReference,
+    PoseEstimate,
+    PoseMode,
+)
 
 
 def test_observation_contract_has_no_ground_truth():
@@ -29,4 +34,3 @@ def test_pose_contract_rejects_negative_runtime():
 def test_model_reference_is_path_only():
     model = ModelReference(2, Path("models/obj_000002.ply"), 0.172)
     assert model.object_id == 2
-

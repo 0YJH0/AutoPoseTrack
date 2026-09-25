@@ -10,23 +10,25 @@ CUDA/native dependency stack is substantially different.
 Do not copy datasets, checkpoints, or experiment outputs into an image. Mount
 them at runtime so image rebuilds are cheap and research artifacts persist.
 
-## Current host status (2026-09-25)
+## Verified host status (2026-09-25)
 
-- WSL2 is active.
-- CUDA toolkit 11.8 and `nvcc` exist.
-- GPU compute is **not available**: `/dev/dxg` is absent and `nvidia-smi` reports
-  `GPU access blocked by the operating system`.
-- Docker is **not available in this WSL distribution**; Docker Desktop reports
-  that WSL integration must be enabled.
+- WSL2 and Docker Desktop WSL integration are active.
+- CUDA toolkit 11.8 and `nvcc` exist on the WSL host.
+- RTX 4060 Laptop GPU (8188 MiB, driver 576.02) is visible from ordinary WSL.
+- GPU passthrough was verified with the CUDA 12.4.1 Ubuntu 22.04 container.
+- Docker Desktop 4.43.1 / Engine 28.3.0 are available.
+- Core and training images build successfully and pass their checks.
 
-The CUDA toolkit does not prove that a GPU is accessible. Treat the preflight
-script as the gate:
+The CUDA toolkit alone does not prove that a GPU is accessible. Treat the
+preflight script and a CUDA-container smoke test as gates. A restricted command
+sandbox may intentionally hide `/dev/dxg`; run hardware preflight in an ordinary
+WSL terminal:
 
 ```bash
 python -m scripts.check_environment --require-gpu --require-docker
 ```
 
-## Fix WSL and Docker Desktop first
+## WSL and Docker Desktop recovery procedure
 
 From an elevated Windows PowerShell:
 
@@ -40,7 +42,7 @@ the WSL 2 engine, and enable this distribution under
 `Settings > Resources > WSL Integration`. Do not install a Linux NVIDIA display
 driver inside WSL; WSL receives the driver interface from Windows.
 
-After reopening WSL:
+If GPU or Docker access regresses, reopen WSL and run:
 
 ```bash
 ls -l /dev/dxg
@@ -77,6 +79,21 @@ Rebuild after changing `pyproject.toml`, the Python version, or system packages:
 ```bash
 docker compose build core
 ```
+
+## Training image
+
+Training and plotting dependencies are isolated from the minimal core image:
+
+```bash
+export FEATURE_DATA_ROOT=/absolute/path/to/generated/features
+docker compose build training
+docker compose run --rm training
+```
+
+The feature root is mounted read-only at `/data/features`; checkpoints and
+metrics are written under the mounted `outputs/` directory. Add future PyTorch
+dependencies to the `train` optional dependency or a dedicated GPU training
+target, not to the core runtime.
 
 For a paper run, do not use the mutable development mount. Build a versioned
 image from a clean commit and record its immutable digest:
@@ -116,4 +133,3 @@ export FOUNDATIONPOSE_BASE='wenbowen123/foundationpose@sha256:<digest>'
 
 FoundationPose source, weights, base image, renderers, and datasets retain their
 own licenses. Review them before publishing an artifact.
-

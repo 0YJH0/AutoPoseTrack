@@ -17,7 +17,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7", "ruff>=0.6"]
-viz = ["matplotlib>=3.7", "pandas>=2.0", "scikit-learn>=1.3"]
+train = ["scikit-learn>=1.3"]
+viz = ["matplotlib>=3.7", "pandas>=2.0"]
 
 [tool.setuptools.packages.find]
 include = ["autoposetrack*"]
@@ -30,3 +31,6 @@ addopts = "-ra"
 line-length = 88
 target-version = "py39"
 
+[tool.ruff.lint]
+# Keep Python 3.9-compatible Optional/typing imports and module-style scripts.
+ignore = ["EXE001", "TRY004", "UP035", "UP045"]
