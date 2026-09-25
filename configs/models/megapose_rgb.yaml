@@ -1,0 +1,12 @@
+name: megapose
+adapter: megapose_rgb
+upstream_root: ${MEGAPOSE_ROOT}
+data_root: ${MEGAPOSE_DATA_DIR}
+model_name: megapose-1.0-RGB-multi-hypothesis
+modality: rgb
+allow_depth_at_inference: false
+coarse_enabled: true
+refiner_enabled: true
+coarse_hypotheses: 5
+refiner_iterations: 1
+

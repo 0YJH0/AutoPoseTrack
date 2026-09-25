@@ -49,5 +49,14 @@ def load_experiment_config(path: Path) -> ExperimentConfig:
     dataset_root = payload["dataset"].get("root")
     if not dataset_root:
         raise ValueError("dataset.root must be set explicitly")
+    for section_name in ("dataset", "model"):
+        section = payload[section_name]
+        if section.get("modality") != "rgb":
+            raise ValueError(f"{section_name}.modality must be 'rgb'")
+        if section.get("allow_depth_at_inference") is not False:
+            raise ValueError(
+                f"{section_name}.allow_depth_at_inference must be false"
+            )
+    if payload.get("features", {}).get("depth") is not False:
+        raise ValueError("features.depth must be false for RGB-only experiments")
     return ExperimentConfig(raw=payload, source=source)
-

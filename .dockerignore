@@ -15,10 +15,9 @@ datasets
 checkpoints
 outputs
 third_party/*
-!third_party/FoundationPose
+!third_party/MegaPose
 *.tar
 *.zip
 *.pth
 *.pt
 *.ckpt
-

@@ -41,22 +41,24 @@ services:
     environment:
       FEATURE_DATA_ROOT: /data/features
 
-  foundationpose:
+  megapose:
     profiles: [gpu]
     build:
       context: .
-      dockerfile: docker/foundationpose.Dockerfile
+      dockerfile: docker/megapose.Dockerfile
       args:
-        FOUNDATIONPOSE_BASE: ${FOUNDATIONPOSE_BASE:-wenbowen123/foundationpose:latest}
-    image: autoposetrack-foundationpose:${AUTPOSETRACK_VERSION:-dev}
+        MEGAPOSE_BASE: ${MEGAPOSE_BASE:-ylabbe/megapose6d:latest}
+    image: autoposetrack-megapose:${AUTPOSETRACK_VERSION:-dev}
     working_dir: /workspace/AutoPoseTrack
     ipc: host
     volumes:
       - ./outputs:/workspace/AutoPoseTrack/outputs
       - ${YCBV_ROOT:-./data/ycbv}:/data/ycbv:ro
-      - ${FOUNDATIONPOSE_WEIGHTS:-./checkpoints/foundationpose}:/workspace/FoundationPose/weights:ro
+      - ${MEGAPOSE_DATA_ROOT:-./data/megapose}:/megapose-data
     environment:
       YCBV_ROOT: /data/ycbv
+      MEGAPOSE_DATA_DIR: /megapose-data
+      AUTPOSETRACK_MODALITY: rgb
     deploy:
       resources:
         reservations:

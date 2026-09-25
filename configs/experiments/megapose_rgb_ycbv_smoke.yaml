@@ -1,0 +1,37 @@
+experiment:
+  name: megapose_rgb_ycbv_smoke
+  seed: 2027
+dataset:
+  name: ycbv
+  root: /REPLACE/WITH/YCBV_ROOT
+  layout: bop
+  split: test
+  modality: rgb
+  allow_depth_at_inference: false
+  detection_source: explicit_unset
+  mask_source: optional
+model:
+  name: megapose
+  upstream_root: /REPLACE/WITH/MEGAPOSE_ROOT
+  data_root: /REPLACE/WITH/MEGAPOSE_DATA_DIR
+  model_name: megapose-1.0-RGB-multi-hypothesis
+  modality: rgb
+  allow_depth_at_inference: false
+  global_enabled: true
+  local_refiner_enabled: true
+state_manager:
+  track_threshold: 0.7
+  lost_threshold: 0.3
+  consecutive_lost_frames: 3
+features:
+  visual: false
+  silhouette: false
+  temporal: false
+  matching: false
+  depth: false
+evaluation:
+  add_auc_max_threshold_m: 0.1
+  save_per_frame: true
+  save_events: true
+output:
+  root: outputs

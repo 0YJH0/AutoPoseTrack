@@ -17,12 +17,40 @@ def test_observation_contract_has_no_ground_truth():
         frame_id=1,
         object_id=2,
         rgb=np.zeros((2, 3, 3), dtype=np.uint8),
-        depth_m=np.ones((2, 3)),
         camera_matrix=np.eye(3),
+        bbox_xyxy=np.array([0.0, 0.0, 3.0, 2.0]),
         mask=np.ones((2, 3), dtype=bool),
     )
     frame.validate()
     assert not hasattr(frame, "ground_truth_pose")
+    assert not hasattr(frame, "depth_m")
+
+
+def test_rgb_observation_rejects_depth_metadata():
+    frame = FrameObservation(
+        sequence_id="000048",
+        frame_id=1,
+        object_id=2,
+        rgb=np.zeros((2, 3, 3), dtype=np.uint8),
+        camera_matrix=np.eye(3),
+        bbox_xyxy=np.array([0.0, 0.0, 3.0, 2.0]),
+        metadata={"depth_m": np.ones((2, 3))},
+    )
+    with pytest.raises(ValueError, match="RGB-only"):
+        frame.validate()
+
+
+def test_rgb_observation_rejects_invalid_bbox():
+    frame = FrameObservation(
+        sequence_id="000048",
+        frame_id=1,
+        object_id=2,
+        rgb=np.zeros((2, 3, 3), dtype=np.uint8),
+        camera_matrix=np.eye(3),
+        bbox_xyxy=np.array([2.0, 0.0, 1.0, 2.0]),
+    )
+    with pytest.raises(ValueError, match="bbox"):
+        frame.validate()
 
 
 def test_pose_contract_rejects_negative_runtime():

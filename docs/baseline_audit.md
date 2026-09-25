@@ -1,27 +1,26 @@
 # Phase 0 baseline and code audit
 
 Audited: 2026-09-25. This is a code-integration audit, not a reproduced accuracy
-or speed comparison. Runtime values vary with hardware and protocol; no local
-GPU run has been completed.
+or speed comparison. Runtime values vary with hardware and protocol; GPU
+transport is verified but no pose baseline has been run.
 
 ## Decision
 
-Use **FoundationPose model-based RGB-D** as the first complete baseline, behind
+Use **MegaPose RGB** as the first complete baseline, behind
 two project-owned adapters:
 
-- registration as `GlobalPoseEstimator` for initialization/relocalization;
-- tracking/refinement as `LocalPoseTracker` for frame-to-frame updates.
+- coarse estimation as `GlobalPoseEstimator` for initialization/relocalization;
+- RGB refinement as `LocalPoseTracker`, initialized from the previous pose.
 
-It is the only primary candidate here whose official release directly exposes
-both roles and an explicit YCB-Video script. That minimizes cross-project pose,
-renderer, checkpoint, and environment mismatch during Phase 1. It also creates a
-clean experiment: keep the pose engine fixed and later compare no recovery,
-heuristic recovery, and learned recoverability.
+The official release defaults to RGB input and exposes coarse estimation plus
+render-and-compare refinement, pretrained checkpoints, YCB-V assets, and an
+official Docker image. Using one pose stack minimizes cross-project convention
+and renderer mismatch. The primary protocol forbids depth, ICP, and RGB-D
+checkpoints.
 
-This recommendation is **conditional** on license acceptance and a successful
-GPU/container smoke test. The NVIDIA Source Code License is not equivalent to a
-permissive OSI license; institutional/legal review may be required before
-redistribution or some uses.
+This recommendation is conditional on a successful pinned upstream RGB smoke
+test. MegaPose's top-level code is Apache-2.0 unless otherwise specified; nested
+renderers, assets, datasets, weights, and images still require separate review.
 
 ## Candidate comparison
 
@@ -29,7 +28,7 @@ redistribution or some uses.
 |---|---|---|---|---|---|
 | FoundationPose (CVPR 2024) | [NVlabs/FoundationPose](https://github.com/NVlabs/FoundationPose), NVIDIA Source Code License | RGB-D for released model-based pipeline; CAD mesh, intrinsics, depth | Requires object mask for registration; registration does not require a pose; tracking takes prior pose | Native registration **and** tracking; official `run_ycb_video.py` | Released refiner/scorer weights. CUDA renderer and compiled extensions; upstream recommends Docker. Registration is much heavier than tracking; benchmark locally. **Medium-high** setup risk, **low** conceptual adapter risk. |
 | GigaPose (CVPR 2024) | [nv-nguyen/gigaPose](https://github.com/nv-nguyen/gigaPose), MIT except inherited components | RGB, CAD-rendered templates; optional downstream refiner | Requires detection/segmentation (official pipeline uses CNOS detections); no prior pose | Global per-image estimation, not a temporal tracker; BOP-format evaluation includes YCB-V-era datasets/config lineage but current README paths focus BOP challenge sets—verify exact YCB-V recipe at pinned commit | Checkpoint download scripts supplied. Template onboarding plus coarse/refinement stack; paper emphasizes speed but measure total detection+render+refine cost. **Medium-high** integration, requiring a separate tracker. |
-| MegaPose (CoRL 2022) | [megapose6d/megapose6d](https://github.com/megapose6d/megapose6d), Apache-2.0 unless noted | RGB; depth optional; CAD mesh, intrinsics, bounding box | Requires labeled 2D detection/box; coarse hypotheses plus render-and-compare refinement | Primarily per-image global estimation/refinement, not temporal tracking; official YCB-V example and BOP assets | Pretrained models and download tooling supplied. Mature but large rendering/data stack; typically slower multi-hypothesis pipeline. **High** integration if paired with a separate local tracker. |
+| MegaPose (CoRL 2022) | [megapose6d/megapose6d](https://github.com/megapose6d/megapose6d), Apache-2.0 unless noted | RGB by default; CAD mesh, intrinsics, bounding box | Requires labeled 2D detection/box; coarse hypotheses plus render-and-compare refinement | Use coarse model globally and previous-pose initialized RGB refinement locally; official YCB-V example and BOP assets | Pretrained RGB models and Docker image supplied. Mature but large rendering stack. **Selected first baseline.** |
 | BundleSDF (CVPR 2023) / BundleTrack (CVPR 2021) | [FreeArtGS/BundleSDF](https://github.com/FreeArtGS/BundleSDF) and [wenbowen123/BundleTrack](https://github.com/wenbowen123/BundleTrack); verify all nested licenses before use | RGB-D video; designed for unknown objects; BundleSDF jointly reconstructs geometry | First-frame object mask; no CAD required; not autonomous category/object discovery | Strong temporal tracking/reconstruction, but official evaluations center on HO3D, YCBInEOAT, and BEHAVE rather than YCB-Video tracking protocol | Multiple native/CUDA components and pretrained feature/segmentation dependencies; concurrent reconstruction makes controlled local-basin experiments expensive. **Very high** integration. Useful later as a tracker comparison, not Phase 1. |
 
 ## Detailed fit analysis
@@ -49,10 +48,8 @@ PyTorch3D/NVDiffRast and native extensions, and currently documents Python 3.11
 for a local conda route while also recommending Docker. Therefore the first task
 is an unchanged upstream smoke test, not immediate adapter development.
 
-Research fit is excellent because registration and tracking share representations
-while remaining callable modes. Raw scorer/refiner outputs should be preserved as
-matching-confidence candidates, but must not be treated as calibrated reliability
-without Phase 2 evidence.
+It is retained only as an RGB-D comparison, not as the primary pipeline, because
+the project's declared inference modality is monocular RGB.
 
 ### GigaPose
 
@@ -65,12 +62,12 @@ candidate for independent-per-frame and relocalization ablations.
 
 ### MegaPose
 
-MegaPose consumes an RGB image (optional depth), intrinsics, object mesh, and a
-labeled bounding box, and provides pretrained coarse/refinement models. It has
-an official YCB-V example and a permissive top-level license. It is credible for
-global initialization, but does not itself supply the desired temporal tracker;
-its broad renderer/data stack increases adapter effort. Retain it as a Phase 5
-global-estimator alternative after the first baseline is stable.
+MegaPose consumes RGB, intrinsics, an object mesh, and a labeled bounding box,
+and provides pretrained coarse/refinement models. For tracking, the prior-frame
+pose initializes the RGB refiner on the current frame. This is a local refinement
+baseline rather than a learned temporal state model, which is appropriate for
+studying its recoverable basin. Raw coarse/refiner scores and correction sizes
+must be preserved, but not assumed calibrated before Phase 2 analysis.
 
 ### BundleSDF / BundleTrack
 
@@ -109,4 +106,3 @@ method using GT masks with one using predicted masks without an explicit label.
   and [paper](https://arxiv.org/abs/2108.00516).
 - [BOP Toolkit](https://github.com/thodan/bop_toolkit) for standard pose metric
   cross-checking.
-

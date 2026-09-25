@@ -2,8 +2,8 @@ name: ycbv
 root: ${YCBV_ROOT}
 layout: bop
 split: test
-use_depth: true
-depth_unit_on_disk: mm
+modality: rgb
+allow_depth_at_inference: false
 target_mode: all_visible_instances
-mask_source: explicit_unset
-
+detection_source: explicit_unset
+mask_source: optional

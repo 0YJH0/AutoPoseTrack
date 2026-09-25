@@ -39,13 +39,12 @@ git status --short --branch
 
 ## Consequences
 
-- GPU and Docker transport are verified, but no FoundationPose accuracy or
+- GPU and Docker transport are verified, but no MegaPose RGB accuracy or
   runtime claim has been measured.
 - Hardware checks from the restricted command sandbox can produce a false
   negative because device nodes are intentionally hidden; use ordinary WSL.
 - The existing Python 3.9 base environment must not be reused as the research
-  environment; FoundationPose upstream currently documents a distinct Python
-  environment and compiled CUDA dependencies.
+  environment; MegaPose remains isolated in its upstream Docker environment.
 - Git commits and third-party submodules are available; pin each external
   repository revision before an experiment.
 - Sixteen GiB host RAM may constrain parallel data loading and template caches;

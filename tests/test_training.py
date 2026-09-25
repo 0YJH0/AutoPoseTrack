@@ -30,7 +30,7 @@ def make_dataset() -> FeatureDataset:
         frame_ids=np.arange(6),
         object_ids=np.full(6, 2),
         feature_names=("matching_score", "mask_iou"),
-        metadata={"label_definition": "unit-test fixture"},
+        metadata={"label_definition": "unit-test fixture", "modality": "rgb"},
     )
 
 
@@ -86,3 +86,17 @@ def test_training_rejects_one_class_labels():
     with pytest.raises(ValueError, match="both classes"):
         model.fit(np.ones((3, 2)), np.ones(3))
 
+
+def test_feature_dataset_rejects_depth_features():
+    dataset = make_dataset()
+    invalid = FeatureDataset(
+        features=dataset.features,
+        labels=dataset.labels,
+        sequence_ids=dataset.sequence_ids,
+        frame_ids=dataset.frame_ids,
+        object_ids=dataset.object_ids,
+        feature_names=("matching_score", "depth_residual"),
+        metadata={"modality": "rgb"},
+    )
+    with pytest.raises(ValueError, match="depth features"):
+        invalid.validate()

@@ -22,15 +22,15 @@ class PoseMode(str, Enum):
 
 @dataclass(frozen=True)
 class FrameObservation:
-    """One frame/object observation; GT is intentionally absent."""
+    """One monocular-RGB frame/object observation; GT and depth are absent."""
 
     sequence_id: str
     frame_id: int
     object_id: int
     rgb: UInt8Array
-    depth_m: FloatArray
     camera_matrix: FloatArray
-    mask: npt.NDArray[np.bool_]
+    bbox_xyxy: FloatArray
+    mask: Optional[npt.NDArray[np.bool_]] = None
     timestamp_s: Optional[float] = None
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
@@ -38,14 +38,22 @@ class FrameObservation:
         if self.rgb.ndim != 3 or self.rgb.shape[2] != 3:
             raise ValueError("rgb must have shape (H, W, 3)")
         height, width = self.rgb.shape[:2]
-        if self.depth_m.shape != (height, width):
-            raise ValueError("depth_m must match rgb spatial dimensions")
-        if self.mask.shape != (height, width):
-            raise ValueError("mask must match rgb spatial dimensions")
+        if self.rgb.dtype != np.uint8:
+            raise ValueError("rgb must use uint8 values")
+        bbox = np.asarray(self.bbox_xyxy, dtype=np.float64)
+        if bbox.shape != (4,) or not np.isfinite(bbox).all():
+            raise ValueError("bbox_xyxy must contain four finite values")
+        x_min, y_min, x_max, y_max = bbox
+        if not (0 <= x_min < x_max <= width and 0 <= y_min < y_max <= height):
+            raise ValueError("bbox_xyxy must be non-empty and inside the image")
+        if self.mask is not None and self.mask.shape != (height, width):
+            raise ValueError("mask must match rgb spatial dimensions when present")
         if self.camera_matrix.shape != (3, 3):
             raise ValueError("camera_matrix must have shape (3, 3)")
         if not np.isfinite(self.camera_matrix).all():
             raise ValueError("camera_matrix contains non-finite values")
+        if "depth" in self.metadata or "depth_m" in self.metadata:
+            raise ValueError("RGB-only observations must not contain depth metadata")
 
 
 @dataclass(frozen=True)
@@ -73,4 +81,3 @@ class ModelReference:
     object_id: int
     mesh_path: Path
     diameter_m: Optional[float] = None
-

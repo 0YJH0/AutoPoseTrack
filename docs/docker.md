@@ -4,7 +4,7 @@
 
 Docker is the primary environment boundary. The project does not install Conda
 inside its own images. The core image uses Python 3.11 and pip metadata from
-`pyproject.toml`; FoundationPose is isolated in a separate GPU image because its
+`pyproject.toml`; MegaPose is isolated in a separate GPU image because its
 CUDA/native dependency stack is substantially different.
 
 Do not copy datasets, checkpoints, or experiment outputs into an image. Mount
@@ -54,14 +54,14 @@ python -m scripts.check_environment --require-gpu --require-docker
 
 ## Core image
 
-The core image is CPU-capable and independent of FoundationPose:
+The core image is CPU-capable and independent of MegaPose:
 
 ```bash
 docker compose build core
 docker compose run --rm core
 docker compose run --rm core \
   python -m scripts.validate_config \
-  configs/experiments/foundationpose_ycbv_smoke.yaml
+  configs/experiments/megapose_rgb_ycbv_smoke.yaml
 ```
 
 ## Live source development
@@ -104,32 +104,33 @@ docker image inspect autoposetrack-core:$(git rev-parse --short HEAD) \
   --format '{{index .RepoDigests 0}} {{.Id}}'
 ```
 
-## FoundationPose image
+## MegaPose RGB image
 
-Only proceed after GPU preflight passes. Pin FoundationPose as a submodule:
+Pin MegaPose and its submodules before building:
 
 ```bash
-git submodule add https://github.com/NVlabs/FoundationPose.git third_party/FoundationPose
-git -C third_party/FoundationPose checkout <REVIEWED_COMMIT>
-git add .gitmodules third_party/FoundationPose
+git submodule add https://github.com/megapose6d/megapose6d.git third_party/MegaPose
+git -C third_party/MegaPose submodule update --init
+git -C third_party/MegaPose checkout <REVIEWED_COMMIT>
+git add .gitmodules third_party/MegaPose
 ```
 
 Set external paths and build:
 
 ```bash
 export YCBV_ROOT=/absolute/path/to/ycbv
-export FOUNDATIONPOSE_WEIGHTS=/absolute/path/to/foundationpose/weights
+export MEGAPOSE_DATA_ROOT=/absolute/path/to/megapose-data
 export AUTPOSETRACK_VERSION=$(git rev-parse --short HEAD)
-docker compose --profile gpu build foundationpose
-docker compose --profile gpu run --rm foundationpose nvidia-smi
+docker compose --profile gpu build megapose
+docker compose --profile gpu run --rm megapose nvidia-smi
 ```
 
-The default FoundationPose base tag follows upstream documentation but is not
+The default MegaPose base tag follows upstream documentation but is not
 immutable. Before a reproducibility run, resolve it to a digest and set:
 
 ```bash
-export FOUNDATIONPOSE_BASE='wenbowen123/foundationpose@sha256:<digest>'
+export MEGAPOSE_BASE='ylabbe/megapose6d@sha256:<digest>'
 ```
 
-FoundationPose source, weights, base image, renderers, and datasets retain their
+MegaPose source, weights, base image, renderers, and datasets retain their
 own licenses. Review them before publishing an artifact.

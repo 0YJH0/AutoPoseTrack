@@ -38,6 +38,16 @@ class FeatureDataset:
             raise ValueError("feature_names length must match feature dimension")
         if len(set(self.feature_names)) != len(self.feature_names):
             raise ValueError("feature_names must be unique")
+        forbidden = [
+            name
+            for name in self.feature_names
+            if "depth" in name.lower() or "rgbd" in name.lower()
+        ]
+        if forbidden:
+            raise ValueError(f"RGB-only feature schema contains depth features: {forbidden}")
+        modality = self.metadata.get("modality")
+        if modality is not None and modality != "rgb":
+            raise ValueError("feature dataset modality must be 'rgb'")
         for name, values in (
             ("labels", self.labels),
             ("sequence_ids", self.sequence_ids),

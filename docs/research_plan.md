@@ -24,6 +24,8 @@ better per-frame pose score.
 - YCB-Video is the first dataset; DexYCB and UAV data are out of Phase 1 scope.
 - Ground truth is used only for training labels, controlled benchmark creation,
   and offline metrics.
+- Inference modality is monocular RGB. Depth images, depth-derived features,
+  ICP, and RGB-D checkpoints are prohibited in the primary protocol.
 - All third-party revisions, data splits, seeds, configurations, checkpoints,
   and hardware are recorded.
 - Every reported aggregate is reproducible from saved per-frame predictions.
@@ -40,29 +42,28 @@ better per-frame pose score.
 Delivered:
 
 - research-oriented repository skeleton;
-- host environment inventory and identified GPU blocker;
+- verified WSL/Docker GPU environment;
 - audited FoundationPose, GigaPose, MegaPose, and BundleSDF/BundleTrack;
-- selected FoundationPose model-based RGB-D as the first baseline;
+- selected MegaPose RGB coarse estimation plus RGB refinement as the first baseline;
 - recorded unresolved choices in `docs/open_questions.md`.
 
 Gate: documentation is internally consistent and makes no performance claim.
 
 ### Phase 1 — baseline first (next)
 
-1. **GPU/environment preflight.** Make `nvidia-smi` work inside WSL2 and inside
-   the chosen container/environment. Record driver, CUDA runtime/toolkit, GPU,
-   VRAM, image digest, and upstream commit.
-2. **Upstream smoke test.** Run the official FoundationPose model-based demo
+1. **GPU/environment preflight.** Record driver, CUDA runtime/toolkit, GPU,
+   VRAM, image digest, and upstream commit (host/container GPU already verified).
+2. **Upstream smoke test.** Run the official MegaPose RGB demo
    unchanged. Archive its command, logs, output visualization, and runtime.
-3. **Pinned external dependency.** Add FoundationPose under `third_party/` as a
+3. **Pinned external dependency.** Add MegaPose under `third_party/` as a
    pinned submodule or external checkout; record patches separately. Never copy
    its implementation into `autoposetrack/`.
 4. **Data contract.** Implement a YCB-Video sequence loader returning RGB,
-   depth in metres, intrinsics, instance mask, object id, timestamp/frame id,
-   and optional GT pose (evaluation-only access).
+   intrinsics, detection box, optional RGB-derived mask, object id, and
+   timestamp/frame id. GT pose remains evaluation-only.
 5. **Adapters.** Define narrow `GlobalPoseEstimator` and `LocalPoseTracker`
-   protocols and wrap FoundationPose registration/tracking. Preserve upstream
-   scores and timing as raw outputs.
+   protocols and wrap MegaPose RGB coarse estimation/refinement. Preserve
+   upstream scores and timing as raw outputs.
 6. **Prediction schema.** Persist one row per frame/object plus event records;
    never hide failed frames. Include validity/error fields rather than NaNs with
    undocumented meaning.
@@ -139,17 +140,15 @@ internally, joining them only in evaluation, to make leakage structurally hard.
 
 ## Next minimal executable task
 
-Prerequisite: fix WSL GPU visibility. Then, from a separate external checkout:
+From a pinned external checkout:
 
 ```bash
-git clone https://github.com/NVlabs/FoundationPose.git third_party/FoundationPose
-git -C third_party/FoundationPose rev-parse HEAD
-cd third_party/FoundationPose/docker
-docker pull wenbowen123/foundationpose
-bash run_container.sh
-# Inside the container, following the pinned upstream revision:
-bash build_all.sh
-python run_demo.py
+git submodule add https://github.com/megapose6d/megapose6d.git third_party/MegaPose
+git -C third_party/MegaPose submodule update --init
+git -C third_party/MegaPose rev-parse HEAD
+docker pull ylabbe/megapose6d
+docker compose --profile gpu build megapose
+docker compose --profile gpu run --rm megapose nvidia-smi
 ```
 
 These commands are a proposed procedure, not yet executed. Before cloning,
@@ -158,4 +157,3 @@ GPU visible in container, extensions build without local source edits, demo
 completes, output pose/visualization exists, and command/log/runtime/hardware are
 archived. If the current upstream instructions differ, use and pin those exact
 instructions rather than silently repairing them.
-

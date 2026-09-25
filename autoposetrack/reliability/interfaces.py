@@ -1,4 +1,4 @@
-"""Reliability interfaces; implementations must not access evaluation GT."""
+"""RGB-only reliability interfaces with no evaluation GT or depth access."""
 
 from __future__ import annotations
 
@@ -29,4 +29,3 @@ class ReliabilityEstimator(ABC):
         history: Sequence[PoseEstimate],
     ) -> ReliabilityResult:
         """Assess recoverability using inference-available information only."""
-

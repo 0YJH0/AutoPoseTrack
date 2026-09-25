@@ -1,4 +1,4 @@
-"""Narrow interfaces isolating third-party pose implementations."""
+"""Narrow RGB pose interfaces isolating third-party implementations."""
 
 from __future__ import annotations
 
@@ -28,4 +28,3 @@ class LocalPoseTracker(ABC):
 
     def reset(self) -> None:
         """Clear implementation-specific temporal state."""
-
