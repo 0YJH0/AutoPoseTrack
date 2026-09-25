@@ -1,0 +1,32 @@
+experiment:
+  name: foundationpose_ycbv_smoke
+  seed: 2027
+dataset:
+  name: ycbv
+  root: /REPLACE/WITH/YCBV_ROOT
+  layout: bop
+  split: test
+  use_depth: true
+  mask_source: explicit_unset
+model:
+  name: foundationpose
+  upstream_root: /REPLACE/WITH/FOUNDATIONPOSE_ROOT
+  checkpoint_root: /REPLACE/WITH/FOUNDATIONPOSE_WEIGHTS
+  global_enabled: true
+  local_enabled: true
+state_manager:
+  track_threshold: 0.7
+  lost_threshold: 0.3
+  consecutive_lost_frames: 3
+features:
+  visual: false
+  geometry: false
+  temporal: false
+  matching: false
+evaluation:
+  add_auc_max_threshold_m: 0.1
+  save_per_frame: true
+  save_events: true
+output:
+  root: outputs
+

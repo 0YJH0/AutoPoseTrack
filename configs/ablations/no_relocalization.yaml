@@ -1,0 +1,11 @@
+features:
+  visual: true
+  geometry: true
+  temporal: true
+  matching: true
+system:
+  reliability_enabled: true
+  relocalization_enabled: false
+  temporal_state_enabled: true
+  hysteresis_enabled: true
+

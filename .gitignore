@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.venv/
+.env
+*.egg-info/
+build/
+dist/
+
+# Datasets, checkpoints, third-party checkouts, and generated runs are external.
+data/
+checkpoints/
+third_party/*
+!third_party/.gitkeep
+outputs/*
+!outputs/.gitkeep
+!outputs/README.md
+

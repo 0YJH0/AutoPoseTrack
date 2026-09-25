@@ -1,0 +1,2 @@
+"""Global pose-estimator adapters."""
+

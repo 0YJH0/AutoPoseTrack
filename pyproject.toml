@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "autoposetrack"
+version = "0.1.0"
+description = "Research infrastructure for autonomous, failure-aware 6D object pose tracking"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "AutoPoseTrack contributors"}]
+dependencies = [
+  "numpy>=1.23,<3",
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.6"]
+viz = ["matplotlib>=3.7", "pandas>=2.0", "scikit-learn>=1.3"]
+
+[tool.setuptools.packages.find]
+include = ["autoposetrack*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+

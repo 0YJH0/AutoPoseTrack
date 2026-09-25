@@ -1,0 +1,8 @@
+name: foundationpose
+adapter: foundationpose
+upstream_root: ${FOUNDATIONPOSE_ROOT}
+checkpoint_root: ${FOUNDATIONPOSE_WEIGHTS}
+model_based: true
+registration_iterations: null
+tracking_iterations: null
+

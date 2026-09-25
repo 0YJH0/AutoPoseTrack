@@ -1,0 +1,9 @@
+name: ycbv
+root: ${YCBV_ROOT}
+layout: bop
+split: test
+use_depth: true
+depth_unit_on_disk: mm
+target_mode: all_visible_instances
+mask_source: explicit_unset
+
