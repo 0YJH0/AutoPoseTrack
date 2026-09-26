@@ -46,6 +46,9 @@ Implemented and tested:
   trials.
 - Evidence-first BOP dataset audit and threshold-free alignment of tracker errors
   with natural dataset attributes.
+- A GT-free full-frame motion proposal module with Farneback flow,
+  homography/affine RANSAC compensation, adaptive residual saliency, component
+  proposals, temporal tracklets, Recall@K evaluation, and debug video.
 
 The checked-in YCB-V audit covers the BOP19 test target subset: 12 scenes,
 900 sparse keyframes, 4,125 object instances, and all 21 YCB-V objects. These
@@ -205,6 +208,24 @@ python -m scripts.export_diagnostics outputs/<run-name>
 Raw datasets, checkpoints, full output directories, and credentials must not be
 committed. Only compact reports and explicitly selected audit artifacts belong
 in Git. See [cloud training](docs/cloud_training.md).
+
+## Full-frame motion proposals
+
+The independent phase-1 motion branch proposes candidate regions without GT
+boxes, masks, poses, CAD, or reference identity:
+
+```bash
+python -m pip install -e ".[motion]"
+python -m scripts.render_motion_proposals \
+  --input data/videos/example.mp4 \
+  --config configs/motion_proposal/default.yaml \
+  --output outputs/motion_example_v1
+```
+
+It is a high-recall scene-search module, not a detector. Reference verification
+will later decide which, if any, proposal is the target. See
+[motion proposal design](docs/motion_proposal_design.md) and
+[failure-analysis protocol](docs/motion_proposal_failure_analysis.md).
 
 ## Data requirements
 

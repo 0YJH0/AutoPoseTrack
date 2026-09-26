@@ -13,3 +13,6 @@ Available infrastructure entry points:
 - `python -m scripts.export_diagnostics outputs/<run-name>`
 - `python -m scripts.run_ycbv_megapose ...`
 - `bash scripts/run_megapose_headless.sh <command>` for Panda3D on headless hosts
+- `python -m scripts.render_motion_proposals ...` for GT-free full-frame motion
+  proposals and debug video
+- `python -m scripts.evaluate_motion_proposals ...` for evaluator-only Recall@K

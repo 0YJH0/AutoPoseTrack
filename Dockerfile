@@ -35,3 +35,8 @@ FROM base AS training
 RUN python -m pip install ".[train,viz]"
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "pytest", "-q"]
+
+FROM base AS motion
+RUN python -m pip install ".[motion]"
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["python", "-m", "scripts.render_motion_proposals", "--help"]

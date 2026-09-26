@@ -1,0 +1,27 @@
+# Experiment matrix. Apply each override to default.yaml before running validation.
+# Final numeric parameters must be selected on validation data, never test results.
+experiments:
+  raw_flow_magnitude:
+    background: {model: none}
+    temporal: {enabled: false}
+  affine_compensation:
+    background: {model: affine, fallback: none}
+    temporal: {enabled: false}
+  homography_compensation:
+    background: {model: homography, fallback: affine}
+    temporal: {enabled: false}
+  no_adaptive_threshold:
+    saliency: {threshold_type: fixed}
+  no_direction_consistency:
+    proposal: {weight_direction: 0.0}
+  no_temporal_aggregation:
+    temporal: {enabled: false}
+  no_proposal_merging:
+    proposal:
+      merge_iou: 1.1
+      merge_centroid_distance_ratio: 0.0
+  no_bbox_expansion:
+    proposal: {bbox_expand_scale: 1.0}
+  full:
+    background: {model: homography, fallback: affine}
+    temporal: {enabled: true}

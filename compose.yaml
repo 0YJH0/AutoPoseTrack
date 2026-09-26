@@ -41,6 +41,23 @@ services:
     environment:
       FEATURE_DATA_ROOT: /data/features
 
+  motion:
+    profiles: [motion]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: motion
+      args:
+        AUTPOSETRACK_VERSION: ${AUTPOSETRACK_VERSION:-dev}
+    image: autoposetrack-motion:${AUTPOSETRACK_VERSION:-dev}
+    working_dir: /workspace/AutoPoseTrack
+    volumes:
+      - .:/workspace/AutoPoseTrack
+      - ${MOTION_INPUT_ROOT:-./data}:/data/motion-input:ro
+    command: bash
+    stdin_open: true
+    tty: true
+
   megapose:
     profiles: [gpu]
     build:
