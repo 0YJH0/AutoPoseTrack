@@ -1,13 +1,19 @@
 # syntax=docker/dockerfile:1.7
 # The official upstream image provides MegaPose's CUDA/PyTorch/rendering stack.
 # Source is supplied as a pinned submodule and retains its Apache-2.0 license.
-ARG MEGAPOSE_BASE=ylabbe/megapose6d:latest
+ARG MEGAPOSE_BASE=ylabbe/megapose6d:1.0
 FROM ${MEGAPOSE_BASE}
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends xvfb xauth \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    MEGAPOSE_DATA_DIR=/megapose-data
+    MEGAPOSE_DATA_DIR=/megapose-data \
+    CONDA_PREFIX=/conda \
+    PATH=/conda/bin:${PATH}
 
 COPY third_party/MegaPose /workspace/MegaPose
 WORKDIR /workspace/MegaPose

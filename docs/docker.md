@@ -123,13 +123,28 @@ export MEGAPOSE_DATA_ROOT=/absolute/path/to/megapose-data
 export AUTPOSETRACK_VERSION=$(git rev-parse --short HEAD)
 docker compose --profile gpu build megapose
 docker compose --profile gpu run --rm megapose nvidia-smi
+docker compose --profile gpu run --rm megapose \
+  python -m megapose.scripts.download --megapose_models
 ```
 
-The default MegaPose base tag follows upstream documentation but is not
-immutable. Before a reproducibility run, resolve it to a digest and set:
+The upstream `latest` tag is unavailable; this repository defaults to the
+existing `ylabbe/megapose6d:1.0` tag. Before a reproducibility run, resolve it
+to a digest and set:
 
 ```bash
 export MEGAPOSE_BASE='ylabbe/megapose6d@sha256:<digest>'
+```
+
+The pinned Panda3D renderer needs an X display even for offscreen rendering on
+Docker Desktop/WSL. The derived image includes Xvfb; launch inference through:
+
+```bash
+docker compose --profile gpu run --rm megapose \
+  bash scripts/run_megapose_headless.sh \
+  python -m scripts.run_ycbv_megapose \
+  --dataset-root /data/ycbv --object-id 5 --sequence 50 --max-frames 1 \
+  --model-name megapose-1.0-RGB --renderer-workers 1 --batch-size 64 \
+  --output outputs/megapose_rgb_ycbv_object5
 ```
 
 MegaPose source, weights, base image, renderers, and datasets retain their

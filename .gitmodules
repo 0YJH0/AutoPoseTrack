@@ -1,0 +1,3 @@
+[submodule "third_party/MegaPose"]
+	path = third_party/MegaPose
+	url = https://github.com/megapose6d/megapose6d.git

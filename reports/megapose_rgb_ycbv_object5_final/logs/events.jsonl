@@ -1,0 +1,4 @@
+{"available_frames": 75, "event": "target_index_created", "object_id": 5, "selected_frames": 1, "sequences": ["000050", "000052"], "timestamp": "2026-09-26T00:18:40.085514+00:00"}
+{"diameter_m": 0.196463, "event": "model_geometry_loaded", "mesh": "/data/ycbv/models/obj_000005.ply", "metric": "ADD", "points": 10983, "timestamp": "2026-09-26T00:18:40.106679+00:00"}
+{"event": "megapose_loaded", "model_name": "megapose-1.0-RGB", "timestamp": "2026-09-26T00:18:47.039124+00:00"}
+{"auc_threshold_m": 0.1, "event": "run_completed", "failed_frames": 0, "mean_pose_error_m": 0.030010194804428007, "mean_runtime_s": 11.739053942001192, "median_pose_error_m": 0.030010194804428007, "pose_auc": 0.69989805195572, "pose_error_name": "ADD", "success_rate": 1.0, "successful_frames": 1, "target_frames": 1, "timestamp": "2026-09-26T00:19:00.263499+00:00"}

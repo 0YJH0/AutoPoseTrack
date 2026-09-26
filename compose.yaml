@@ -47,7 +47,7 @@ services:
       context: .
       dockerfile: docker/megapose.Dockerfile
       args:
-        MEGAPOSE_BASE: ${MEGAPOSE_BASE:-ylabbe/megapose6d:latest}
+        MEGAPOSE_BASE: ${MEGAPOSE_BASE:-ylabbe/megapose6d:1.0}
     image: autoposetrack-megapose:${AUTPOSETRACK_VERSION:-dev}
     working_dir: /workspace/AutoPoseTrack
     ipc: host

@@ -1,0 +1,37 @@
+{
+  "excluded": [
+    "model.npz",
+    "history.json",
+    "per_frame.csv",
+    "figures",
+    "videos"
+  ],
+  "exported_at": "2026-09-26T00:22:35.721228+00:00",
+  "files": {
+    "config.yaml": {
+      "bytes": 393,
+      "sha256": "75c0fe0eb2b77a8ce1a96ff072e5a2a49099e6943c3a1c9d4bf728f2dc6a15c4"
+    },
+    "logs/events.jsonl": {
+      "bytes": 845,
+      "sha256": "df31ec61cabc6e662e74d5d57c986f802f8feb50c6bae8f01d04bd0d4bd16b42"
+    },
+    "logs/metrics.jsonl": {
+      "bytes": 254,
+      "sha256": "15cef6855cb7b5b9a4d7ab3dbfc6632132c8d7613cc688d3524bdbdd792d2dcb"
+    },
+    "logs/train.tail.log": {
+      "bytes": 745,
+      "sha256": "da6ed789e25095d1d39c8ecbe58be93f8604637e8dcd1024e04c61fd89e6b1d6"
+    },
+    "manifest.json": {
+      "bytes": 290,
+      "sha256": "3cc52b3a8a27d2ce402cf5dd1716fa7123854ce47e3ee0f822c958393c91e54d"
+    },
+    "metrics.json": {
+      "bytes": 314,
+      "sha256": "86937d34ddd79a9cf1caafa7fe6b81625627ed33f9d037d9d3001734d75d3575"
+    }
+  },
+  "source_run_name": "megapose_rgb_ycbv_object5_final"
+}

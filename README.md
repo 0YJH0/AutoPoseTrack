@@ -10,10 +10,11 @@ benchmark construction, and offline evaluation.
 
 ## Status
 
-**Phase 0 complete (2026-09-25):** repository and environment audit, strict
-data/model contracts, SE(3) and reference pose metrics, configurable state
-manager, experiment artifact writer, example configurations, and unit tests.
-No baseline performance or experimental result is claimed yet.
+**Phase 1 smoke path operational (2026-09-26):** the repository now includes a
+BOP YCB-V single-object reader/index, a pinned MegaPose RGB adapter, strict
+inference/evaluation separation, headless GPU Docker execution, pose metrics,
+and structured run logs. The initial one-frame result is only an environment
+smoke test, not a baseline performance claim.
 
 The first recommended baseline is **MegaPose RGB** behind an adapter: its coarse
 estimator provides initialization/relocalization and its RGB refiner uses the
@@ -36,8 +37,30 @@ previous pose for local tracking. Depth is prohibited at inference. See
 - Trainable reliability-model protocol, NumPy logistic-regression baseline,
   checkpoint metadata, and training CLI ready for future MLP/PyTorch adapters.
 
-MegaPose and YCB-Video adapters are deliberately not presented as
-implemented until the official upstream demo has passed on a GPU-capable host.
+MegaPose is pinned as a submodule at commit `f3b8e124`; its RGB coarse estimator
+has passed a one-frame YCB-V GPU smoke run on the local RTX 4060 host.
+
+## Single-object YCB-V MegaPose smoke run
+
+The checked path uses object 5 (`006_mustard_bottle`) and oracle BOP
+`bbox_obj` boxes. Ground-truth pose is loaded only after inference for ADD
+evaluation. On a headless Docker/WSL host:
+
+```bash
+export YCBV_ROOT="$PWD/data/bop/ycbv"
+export MEGAPOSE_DATA_ROOT="$PWD/data/megapose"
+docker compose --profile gpu run --rm megapose \
+  bash scripts/run_megapose_headless.sh \
+  python -m scripts.run_ycbv_megapose \
+  --dataset-root /data/ycbv --object-id 5 --sequence 50 \
+  --max-frames 1 --model-name megapose-1.0-RGB \
+  --renderer-workers 1 --batch-size 64 \
+  --output outputs/megapose_rgb_ycbv_object5
+```
+
+Increase `--max-frames` only after the one-frame check succeeds. The output
+contains `frame_index.json`, `per_frame.csv`, `events.csv`, `metrics.json`, the
+resolved configuration/manifest, and structured logs.
 
 ## Installation
 

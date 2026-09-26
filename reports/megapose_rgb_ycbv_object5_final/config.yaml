@@ -1,0 +1,19 @@
+dataset:
+  name: ycbv
+  root: /data/ycbv
+  split: test_bop19
+  object_id: 5
+  sequences:
+  - '50'
+  detection_source: oracle_bbox_obj
+  modality: rgb
+model:
+  name: megapose-1.0-RGB
+  renderer_workers: 1
+  batch_size: 64
+  allow_depth_at_inference: false
+evaluation:
+  metric: ADD
+  auc_threshold_m: 0.1
+  max_frames: 1
+output: /workspace/AutoPoseTrack/outputs/megapose_rgb_ycbv_object5_final

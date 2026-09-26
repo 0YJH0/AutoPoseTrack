@@ -12,6 +12,7 @@ license = {text = "MIT"}
 authors = [{name = "AutoPoseTrack contributors"}]
 dependencies = [
   "numpy>=1.23,<3",
+  "Pillow>=9.0",
   "PyYAML>=6.0",
 ]
 

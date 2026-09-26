@@ -15,7 +15,7 @@ data/
 checkpoints/
 third_party/*
 !third_party/.gitkeep
+!third_party/MegaPose
 outputs/*
 !outputs/.gitkeep
 !outputs/README.md
-

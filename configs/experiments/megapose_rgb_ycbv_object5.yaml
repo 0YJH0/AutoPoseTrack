@@ -1,0 +1,22 @@
+experiment:
+  name: megapose_rgb_ycbv_object5_smoke
+dataset:
+  name: ycbv
+  root: ${YCBV_ROOT}
+  split: test_bop19
+  object_id: 5
+  sequences: [50, 52]
+  detection_source: oracle_bbox_obj
+  modality: rgb
+  allow_depth_at_inference: false
+model:
+  name: megapose-1.0-RGB
+  upstream_commit: f3b8e1247f133f3d098833a251b8f2d744c03e1f
+  renderer_workers: 1
+  batch_size: 64
+evaluation:
+  metric: ADD
+  auc_threshold_m: 0.1
+  max_frames: 1
+output:
+  directory: outputs/megapose_rgb_ycbv_object5_smoke
