@@ -1,3 +1,4 @@
+# Same algorithmic defaults as default.yaml, with dense geometry/saliency on CUDA.
 optical_flow:
   backend: farneback
   pyr_scale: 0.5
@@ -18,7 +19,7 @@ background:
   fallback: affine
 
 dense_processing:
-  backend: numpy_cpu
+  backend: torch_cuda
   device: cuda:0
 
 saliency:

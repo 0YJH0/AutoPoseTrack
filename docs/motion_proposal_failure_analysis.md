@@ -72,3 +72,36 @@ The phase-1 decision question remains:
 
 > Does global-motion-compensated residual optical flow provide sufficiently
 > high-recall full-frame proposals at an acceptable proposal count and runtime?
+
+## BOP-YCB-V adjacent-pair result
+
+The CUDA pipeline was run on every strictly adjacent (`frame_id` delta 1) pair
+available in the public BOP-YCB-V subset: 93 pairs, 12 scenes, and 433 evaluated
+object instances. Homography passed its configured quality gate in all 93 pairs.
+The result was deliberately poor for object discovery:
+
+| Metric | Result |
+|---|---:|
+| Recall@10, IoU 0.3 | 0.46% |
+| Recall@10, IoU 0.5 | 0.00% |
+| Center recall | 0.92% |
+| Mean maximum IoU | 0.0187 |
+| Mean proposals/frame | 9.99 |
+
+This is not primarily a CUDA failure. YCB-V records a moving camera observing
+mostly static tabletop objects. Their optical flow belongs to the dominant
+scene motion that homography compensation is designed to remove. Residual
+motion candidates concentrate on noise, parallax, disocclusion, and imperfect
+flow instead of the static target.
+
+The conclusion changes the system design constraint:
+
+- motion proposals are useful when target motion differs from background;
+- autonomous initialization/relocalization must not require motion;
+- full-frame reference appearance matching needs a parallel path for static
+  targets;
+- motion is a recall cue or prioritizer, not a universal proposal gate.
+
+Saved artifacts are under `outputs/ycbv_motion_adjacent_torch_cuda_v1/`,
+including an MP4, 19 six-panel debug images, frame/proposal logs, per-instance
+metrics, and summary JSON.

@@ -16,3 +16,8 @@ Available infrastructure entry points:
 - `python -m scripts.render_motion_proposals ...` for GT-free full-frame motion
   proposals and debug video
 - `python -m scripts.evaluate_motion_proposals ...` for evaluator-only Recall@K
+- `python -m scripts.benchmark_dense_motion_backends ...` for synchronized
+  NumPy/Torch-CUDA consistency and latency
+- `python -m scripts.test_motion_scenarios ...` for controlled camera/target motion
+- `python -m scripts.run_ycbv_motion_proposals ...` for strictly adjacent public
+  BOP-YCB-V frame pairs

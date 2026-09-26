@@ -200,10 +200,16 @@ class BackgroundMotionEstimator:
 def background_flow_from_model(
     model: BackgroundMotionModel, shape: Tuple[int, int]
 ) -> npt.NDArray[np.float32]:
+    return background_flow_from_matrix(model.matrix, shape)
+
+
+def background_flow_from_matrix(
+    matrix: npt.NDArray[np.floating], shape: Tuple[int, int]
+) -> npt.NDArray[np.float32]:
     height, width = shape
     yy, xx = np.mgrid[0:height, 0:width]
     points = np.stack((xx, yy, np.ones_like(xx)), axis=-1).reshape(-1, 3)
-    transformed_h = (model.matrix @ points.T).T
+    transformed_h = (matrix @ points.T).T
     denominator = transformed_h[:, 2]
     valid = np.abs(denominator) > 1e-8
     transformed = points[:, :2].astype(np.float64)

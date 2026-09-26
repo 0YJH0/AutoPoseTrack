@@ -30,6 +30,10 @@ Reference verification and global pose estimation deliberately remain outside
   homography RANSAC, quality checks, explicit affine/previous/no-compensation
   fallback, and dense background-flow generation.
 - `residual.py`: observed minus predicted-background flow.
+- `dense/`: interchangeable NumPy CPU and `TorchCudaMotionBackend`
+  implementations for dense homography flow, residual, three magnitude maps,
+  adaptive threshold, and binary threshold mask. CUDA timing includes H2D/D2H
+  transfers and synchronizes before measurement.
 - `saliency.py`: MAD, percentile, or fixed threshold plus configurable median,
   opening, closing, and hole filling.
 - `components.py`: connected components, direction consistency, interpretable
@@ -73,6 +77,10 @@ Install the isolated dependency:
 ```bash
 python -m pip install -e ".[motion,dev]"
 ```
+
+For the CUDA dense backend, install a CUDA-compatible PyTorch build for the
+host, then select `configs/motion_proposal/torch_cuda.yaml`. The implementation
+raises an error when CUDA is unavailable; it never silently executes on CPU.
 
 or use Docker:
 
@@ -131,6 +139,68 @@ The evaluator reports Recall@1/3/5/10, maximum proposal IoU, center recall, and
 average proposals/frame. The IoU threshold is an evaluation protocol parameter,
 not an input to proposal generation.
 
+## CPU/CUDA consistency and benchmark
+
+```bash
+python -m scripts.benchmark_dense_motion_backends \
+  --height 576 --width 768 \
+  --warmup 10 --iterations 50 \
+  --require-cuda --check-consistency \
+  --output outputs/dense_motion_backend_benchmark_rtx4060.json
+```
+
+On the local RTX 4060 Laptop GPU, including transfers and synchronization:
+
+| Backend | Mean | Median |
+|---|---:|---:|
+| NumPy CPU | 85.11 ms | 83.74 ms |
+| Torch CUDA | 6.13 ms | 5.77 ms |
+
+Mean speedup was 13.87× for the isolated 576×768 dense stage. CPU/CUDA mask
+agreement was 100%; maximum background/residual discrepancy was
+`1.54e-4` pixels and threshold difference was `1.74e-5`. This does not imply a
+13.87× end-to-end speedup: Farneback, RANSAC, morphology, connected components,
+merge, and temporal association remain on CPU.
+
+## Controlled motion scenarios
+
+```bash
+python -m scripts.test_motion_scenarios \
+  --dense-backend numpy_cpu \
+  --output outputs/motion_scenarios_cpu_v1
+
+python -m scripts.test_motion_scenarios \
+  --dense-backend torch_cuda \
+  --output outputs/motion_scenarios_torch_cuda_v1
+```
+
+The controlled renderer tests (a) camera translation with the target fixed in
+the scene and (b) camera translation plus independent target motion. The first
+case produced target residual `0.010 px` and no target center recall under CUDA.
+The second produced target residual `11.87 px` and center recall, but only
+`0.085` maximum IoU because Farneback motion spread into a large component.
+Both results and six-panel images are kept; the poor IoU is not hidden.
+
+## Public pose-dataset test
+
+The downloaded BOP-YCB-V test subset is sparse, so the runner accepts only
+strictly adjacent frame IDs (`Δframe=1`):
+
+```bash
+python -m scripts.run_ycbv_motion_proposals \
+  --dataset-root data/bop/ycbv \
+  --config configs/motion_proposal/torch_cuda.yaml \
+  --output outputs/ycbv_motion_adjacent_torch_cuda_v1 \
+  --debug-every 5
+```
+
+Across all 93 legal adjacent pairs (433 GT object instances), Recall@10 was
+0.46% at IoU 0.3 and 0% at IoU 0.5; center recall was 0.92%. This is expected
+and important: YCB-V objects are largely static in the scene while the camera
+moves, so correct background compensation removes their shared motion. Motion
+proposal alone therefore cannot autonomously initialize a static reference
+object. A complementary full-frame reference/appearance search is mandatory.
+
 ## Required comparison and ablations
 
 `configs/motion_proposal/ablations.yaml` defines the experiment matrix:
@@ -163,4 +233,3 @@ pose = global_estimator.estimate(target)
 The module may return zero proposals. It may also return several unrelated
 moving objects. “No motion” does not mean “target absent,” and motion mismatch
 does not by itself mean tracking failure.
-

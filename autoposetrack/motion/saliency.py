@@ -46,7 +46,14 @@ def motion_mask(
     morphology: MorphologyConfig,
 ) -> Tuple[npt.NDArray[np.bool_], float]:
     threshold = adaptive_threshold(score, saliency)
-    mask = np.asarray(score > threshold, dtype=np.uint8) * 255
+    mask = np.asarray(score > threshold, dtype=np.bool_)
+    return postprocess_binary_mask(mask, morphology), threshold
+
+
+def postprocess_binary_mask(
+    binary_mask: npt.NDArray[np.bool_], morphology: MorphologyConfig
+) -> npt.NDArray[np.bool_]:
+    mask = np.asarray(binary_mask, dtype=np.uint8) * 255
     if morphology.enabled:
         try:
             import cv2
@@ -66,4 +73,4 @@ def motion_mask(
             mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
         if morphology.fill_holes and np.any(mask):
             mask = _fill_holes(mask)
-    return mask.astype(bool), threshold
+    return mask.astype(bool)

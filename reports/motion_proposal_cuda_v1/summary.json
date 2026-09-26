@@ -1,0 +1,34 @@
+{
+  "controlled_scenarios": {
+    "camera_and_target_move": {
+      "center_recalled": true,
+      "max_iou": 0.08507175915669397,
+      "num_proposals": 4,
+      "target_residual_mean_pixels": 11.869926452636719
+    },
+    "camera_moves_target_static": {
+      "center_recalled": false,
+      "max_iou": 0.0,
+      "num_proposals": 2,
+      "target_residual_mean_pixels": 0.010473895817995071
+    }
+  },
+  "dense_backend_benchmark": {
+    "cpu_mean_ms": 85.11412507999921,
+    "cuda_mean_ms": 6.134408480138518,
+    "mask_agreement": 1.0,
+    "resolution": [768, 576],
+    "speedup_mean": 13.874870797335182,
+    "threshold_abs_difference": 0.000017400932311062434
+  },
+  "public_bop_ycbv": {
+    "center_recall": 0.009237875288683603,
+    "mean_max_iou": 0.018687419944948977,
+    "num_adjacent_frame_pairs": 93,
+    "num_instances": 433,
+    "recall_at_10_iou_03": 0.004618937644341801,
+    "recall_at_10_iou_05": 0.0
+  },
+  "status": "engineering evidence; not a paper benchmark",
+  "torch_cuda_device": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

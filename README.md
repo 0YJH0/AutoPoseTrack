@@ -227,6 +227,13 @@ will later decide which, if any, proposal is the target. See
 [motion proposal design](docs/motion_proposal_design.md) and
 [failure-analysis protocol](docs/motion_proposal_failure_analysis.md).
 
+The optional `TorchCudaMotionBackend` accelerates dense background-flow,
+residual, magnitude, and threshold computation. On the local RTX 4060 it reduced
+that isolated 576×768 stage from 85.11 ms to 6.13 ms (13.87× mean speedup) with
+100% threshold-mask agreement. A public BOP-YCB-V adjacent-pair test also
+exposed the method boundary: static scene objects are correctly absorbed by
+camera-motion compensation, so motion cannot be the only initialization path.
+
 ## Data requirements
 
 The current 1.6 GB BOP19 subset is enough for code tests, dataset audit, and

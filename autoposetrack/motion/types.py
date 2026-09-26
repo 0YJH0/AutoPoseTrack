@@ -117,6 +117,12 @@ class SaliencyConfig:
 
 
 @dataclass(frozen=True)
+class DenseProcessingConfig:
+    backend: str = "numpy_cpu"
+    device: str = "cuda:0"
+
+
+@dataclass(frozen=True)
 class MorphologyConfig:
     enabled: bool = True
     median_kernel: int = 3
@@ -155,6 +161,9 @@ class TemporalConfig:
 class MotionProposalConfig:
     optical_flow: OpticalFlowConfig = field(default_factory=OpticalFlowConfig)
     background: BackgroundConfig = field(default_factory=BackgroundConfig)
+    dense_processing: DenseProcessingConfig = field(
+        default_factory=DenseProcessingConfig
+    )
     saliency: SaliencyConfig = field(default_factory=SaliencyConfig)
     morphology: MorphologyConfig = field(default_factory=MorphologyConfig)
     proposal: ProposalConfig = field(default_factory=ProposalConfig)
@@ -165,6 +174,7 @@ class MotionProposalConfig:
         known = {
             "optical_flow": OpticalFlowConfig,
             "background": BackgroundConfig,
+            "dense_processing": DenseProcessingConfig,
             "saliency": SaliencyConfig,
             "morphology": MorphologyConfig,
             "proposal": ProposalConfig,
@@ -194,6 +204,10 @@ class MotionProposalConfig:
             raise ValueError("background.model must be none, affine, or homography")
         if self.background.fallback not in {"none", "affine", "previous"}:
             raise ValueError("background.fallback must be none, affine, or previous")
+        if self.dense_processing.backend not in {"numpy_cpu", "torch_cuda"}:
+            raise ValueError(
+                "dense_processing.backend must be numpy_cpu or torch_cuda"
+            )
         if self.saliency.threshold_type not in {"mad", "percentile", "fixed"}:
             raise ValueError("unknown saliency threshold_type")
         for name in ("median_kernel", "open_kernel", "close_kernel"):
