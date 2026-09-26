@@ -1,0 +1,21 @@
+{
+  "average_num_proposals": 10.0,
+  "center_recall": 0.15436241610738255,
+  "dataset": "hot3d",
+  "dense_backend": "torch_cuda",
+  "gt_usage": "evaluator_and_debug_visualization_only_after_proposal_generation",
+  "iou_03": {
+    "recall_at_1": 0.013422818791946308,
+    "recall_at_3": 0.040268456375838924,
+    "recall_at_5": 0.04697986577181208,
+    "recall_at_10": 0.0738255033557047
+  },
+  "mean_max_iou": 0.04594700799841363,
+  "num_frame_pairs": 149,
+  "num_instances": 149,
+  "recall_at_10_iou_05": 0.0,
+  "sequence": "clip-001852.tar",
+  "target_bop_id": "29",
+  "target_translation_net_m": 0.1712979378507755,
+  "target_translation_axis_aligned_span_m": 0.5749991385082223
+}

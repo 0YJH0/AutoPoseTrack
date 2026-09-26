@@ -46,10 +46,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: motion
+      target: motion-cuda
       args:
         AUTPOSETRACK_VERSION: ${AUTPOSETRACK_VERSION:-dev}
     image: autoposetrack-motion:${AUTPOSETRACK_VERSION:-dev}
+    gpus: all
+    ipc: host
     working_dir: /workspace/AutoPoseTrack
     volumes:
       - .:/workspace/AutoPoseTrack

@@ -93,6 +93,12 @@ class OpticalFlowConfig:
     iterations: int = 3
     poly_n: int = 5
     poly_sigma: float = 1.2
+    raft_variant: str = "small"
+    raft_device: str = "cuda:0"
+    raft_pretrained: bool = True
+    raft_checkpoint: Optional[str] = None
+    raft_max_side: int = 640
+    raft_num_flow_updates: int = 12
 
 
 @dataclass(frozen=True)
@@ -200,6 +206,12 @@ class MotionProposalConfig:
     def validate(self) -> None:
         if self.optical_flow.backend not in {"farneback", "raft", "gmflow"}:
             raise ValueError("optical_flow.backend must be farneback, raft, or gmflow")
+        if self.optical_flow.raft_variant not in {"small", "large"}:
+            raise ValueError("optical_flow.raft_variant must be small or large")
+        if self.optical_flow.raft_max_side < 8:
+            raise ValueError("optical_flow.raft_max_side must be at least 8")
+        if self.optical_flow.raft_num_flow_updates <= 0:
+            raise ValueError("optical_flow.raft_num_flow_updates must be positive")
         if self.background.model not in {"none", "affine", "homography"}:
             raise ValueError("background.model must be none, affine, or homography")
         if self.background.fallback not in {"none", "affine", "previous"}:

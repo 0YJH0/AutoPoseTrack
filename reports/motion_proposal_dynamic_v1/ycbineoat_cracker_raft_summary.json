@@ -1,0 +1,23 @@
+{
+  "average_num_proposals": 1.9865771812080537,
+  "center_recall": 0.5704697986577181,
+  "dataset": "ycbineoat",
+  "dense_backend": "torch_cuda",
+  "gt_usage": "evaluator_and_debug_visualization_only_after_proposal_generation",
+  "iou_03": {
+    "recall_at_1": 0.10067114093959731,
+    "recall_at_10": 0.10738255033557047,
+    "recall_at_3": 0.10738255033557047,
+    "recall_at_5": 0.10738255033557047
+  },
+  "mean_max_iou": 0.11384532573656037,
+  "num_frame_pairs": 149,
+  "num_frames": 149.0,
+  "num_instances": 149,
+  "recall_at_1": 0.06711409395973154,
+  "recall_at_10": 0.06711409395973154,
+  "recall_at_3": 0.06711409395973154,
+  "recall_at_5": 0.06711409395973154,
+  "sequence": "cracker_box_reorient",
+  "start_frame_index": 117
+}

@@ -227,6 +227,28 @@ will later decide which, if any, proposal is the target. See
 [motion proposal design](docs/motion_proposal_design.md) and
 [failure-analysis protocol](docs/motion_proposal_failure_analysis.md).
 
+Dynamic-object evaluation is supported on continuous YCBInEOAT sequences and
+official 150-frame HOT3D-Clips. Ground-truth masks/boxes are read only after
+proposal generation:
+
+```bash
+python -m scripts.run_dynamic_motion_proposals \
+  --dataset ycbineoat --input data/YCBInEOAT/cracker_box_reorient \
+  --start-frame-index 117 --max-pairs 149 \
+  --config configs/motion_proposal/raft_cuda.yaml \
+  --output outputs/ycbineoat_cracker_raft_cuda_v2
+
+python -m scripts.run_dynamic_motion_proposals \
+  --dataset hot3d \
+  --input data/HOT3D-Clips/train_aria/clip-001852.tar \
+  --stream-id 214-1 \
+  --config configs/motion_proposal/raft_cuda.yaml \
+  --output outputs/hot3d_clip_001852_raft_cuda_v1
+```
+
+Each run writes `motion_proposals.mp4`, six-panel debug images, per-frame
+timings, proposals, per-instance metrics, and `summary.json`.
+
 The optional `TorchCudaMotionBackend` accelerates dense background-flow,
 residual, magnitude, and threshold computation. On the local RTX 4060 it reduced
 that isolated 576×768 stage from 85.11 ms to 6.13 ms (13.87× mean speedup) with

@@ -11,7 +11,11 @@ import numpy.typing as npt
 from .background import BackgroundMotionEstimator
 from .components import merge_proposals, rerank
 from .components import extract_components as extract_motion_components
-from .flow import FarnebackFlowEstimator, OpticalFlowEstimator
+from .flow import (
+    FarnebackFlowEstimator,
+    OpticalFlowEstimator,
+    TorchvisionRaftFlowEstimator,
+)
 from .dense import (
     DenseMotionBackend,
     NumpyDenseMotionBackend,
@@ -33,14 +37,17 @@ class FullFrameMotionProposer:
     ) -> None:
         config.validate()
         self.config = config
-        if flow_estimator is None and config.optical_flow.backend != "farneback":
+        if flow_estimator is None and config.optical_flow.backend == "gmflow":
             raise ValueError(
                 f"backend '{config.optical_flow.backend}' requires an injected "
                 "OpticalFlowEstimator adapter"
             )
-        self.flow_estimator = flow_estimator or FarnebackFlowEstimator(
-            config.optical_flow
-        )
+        if flow_estimator is not None:
+            self.flow_estimator = flow_estimator
+        elif config.optical_flow.backend == "raft":
+            self.flow_estimator = TorchvisionRaftFlowEstimator(config.optical_flow)
+        else:
+            self.flow_estimator = FarnebackFlowEstimator(config.optical_flow)
         self.background_estimator = BackgroundMotionEstimator(config.background)
         if dense_backend is not None:
             self.dense_backend = dense_backend

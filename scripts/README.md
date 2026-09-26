@@ -20,4 +20,7 @@ Available infrastructure entry points:
   NumPy/Torch-CUDA consistency and latency
 - `python -m scripts.test_motion_scenarios ...` for controlled camera/target motion
 - `python -m scripts.run_ycbv_motion_proposals ...` for strictly adjacent public
+  BOP-YCB-V frames.
+- `python -m scripts.run_dynamic_motion_proposals ...` for continuous
+  YCBInEOAT and HOT3D-Clips dynamic-object sequences with evaluator-only GT.
   BOP-YCB-V frame pairs

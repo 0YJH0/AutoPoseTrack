@@ -40,3 +40,24 @@ FROM base AS motion
 RUN python -m pip install ".[motion]"
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "scripts.render_motion_proposals", "--help"]
+
+FROM pytorch/pytorch:2.2.2-cuda12.1-cudnn8-runtime AS motion-cuda
+ARG AUTPOSETRACK_VERSION=dev
+LABEL org.opencontainers.image.title="AutoPoseTrack RAFT Motion" \
+      org.opencontainers.image.source="https://github.com/0YJH0/AutoPoseTrack" \
+      org.opencontainers.image.version="${AUTPOSETRACK_VERSION}"
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+WORKDIR /workspace/AutoPoseTrack
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git tini \
+    && rm -rf /var/lib/apt/lists/*
+COPY pyproject.toml README.md LICENSE ./
+COPY autoposetrack ./autoposetrack
+RUN python -m pip install --upgrade pip \
+    && python -m pip install ".[motion,motion-cuda]"
+COPY configs ./configs
+COPY docs ./docs
+COPY scripts ./scripts
+COPY tests ./tests
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["python", "-m", "scripts.render_motion_proposals", "--help"]

@@ -179,6 +179,37 @@ the scene and (b) camera translation plus independent target motion. The first
 case produced target residual `0.010 px` and no target center recall under CUDA.
 The second produced target residual `11.87 px` and center recall, but only
 `0.085` maximum IoU because Farneback motion spread into a large component.
+
+## Dynamic-object public datasets
+
+Use `scripts.run_dynamic_motion_proposals` for continuous sequences where the
+object itself moves. Two adapters are intentionally separate from proposal
+generation:
+
+- `ycbineoat`: reads `rgb/` for inference and `gt_mask/` (falling back to
+  `masks/`) only for evaluator boxes. This is the clean fixed-camera,
+  moving-object control.
+- `hot3d`: reads the Aria `214-1` RGB stream from an official 150-frame clip
+  and uses `objects.json/boxes_amodal` only after inference. This is the hard
+  moving-camera plus moving-object case.
+
+```bash
+python -m scripts.run_dynamic_motion_proposals \
+  --dataset hot3d \
+  --input data/HOT3D-Clips/train_aria/clip-001852.tar \
+  --stream-id 214-1 \
+  --config configs/motion_proposal/raft_cuda.yaml \
+  --output outputs/hot3d_clip_001852_raft_cuda_v1 \
+  --debug-every 10
+```
+
+The selected HOT3D RGB-visible object (BOP id 29) has a 0.575 m axis-aligned
+world-trajectory span in the clip. With pretrained RAFT-Small (640-pixel
+inference cap), 149 frame pairs / 149 annotated instances give center recall
+97.32%, Recall@10 at IoU 0.3 of 2.68%, and Recall@10 at IoU 0.5 of 0.67%.
+RAFT strongly improves motion coverage, but the selected components often join
+the manipulated object to the hand/arm and remain too large for good IoU. Do
+not tune on the test clip; create a separate validation clip/config first.
 Both results and six-panel images are kept; the poor IoU is not hidden.
 
 ## Public pose-dataset test
