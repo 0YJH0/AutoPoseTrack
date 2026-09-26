@@ -16,6 +16,12 @@ inference/evaluation separation, headless GPU Docker execution, pose metrics,
 and structured run logs. The initial one-frame result is only an environment
 smoke test, not a baseline performance claim.
 
+The pilot continuous protocol is fixed to YCB-V object 5 with GT `bbox_obj`,
+scene 50 for training, and scene 52 for validation. It uses five observable
+frames of history and labels whether ADD(-S) reaches `0.10 * object_diameter`
+at the current frame or within the next ten frames. This two-scene split is an
+engineering pilot and has no independent paper test set.
+
 The first recommended baseline is **MegaPose RGB** behind an adapter: its coarse
 estimator provides initialization/relocalization and its RGB refiner uses the
 previous pose for local tracking. Depth is prohibited at inference. See
@@ -61,6 +67,32 @@ docker compose --profile gpu run --rm megapose \
 Increase `--max-frames` only after the one-frame check succeeds. The output
 contains `frame_index.json`, `per_frame.csv`, `events.csv`, `metrics.json`, the
 resolved configuration/manifest, and structured logs.
+
+Generate the two-scene (about 150-frame) continuous rollout and then its
+recoverability dataset:
+
+```bash
+docker compose --profile gpu run --rm megapose \
+  bash scripts/run_megapose_headless.sh \
+  python -m scripts.run_ycbv_rollout \
+  --dataset-root /data/ycbv \
+  --output outputs/ycbv_object5_rollout
+
+python -m scripts.build_recoverability_features \
+  --rollout outputs/ycbv_object5_rollout/rollout.csv \
+  --diameter-m 0.196463 \
+  --output outputs/ycbv_object5_features
+```
+
+The second command creates `recoverability_features.npz` and
+`sequence_split.json`. GT pose error is consumed only for offline labels; every
+feature is available during RGB inference.
+
+The first natural 150-frame run produced 132 positive and 18 negative labels;
+scene 50 contains only one negative. This validates the pipeline but is too
+imbalanced for reliability training. Seeded SE(3) perturbation rollouts must be
+added before fitting or comparing recoverability models. The checked-in compact
+summary is under `reports/ycbv_object5_rollout_pilot/`.
 
 ## Installation
 

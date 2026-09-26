@@ -1,4 +1,4 @@
 """Global pose-estimator adapters."""
-from .megapose import MegaPoseRGBEstimator
+from .megapose import MegaPoseRGBAdapter, MegaPoseRGBEstimator
 
-__all__ = ["MegaPoseRGBEstimator"]
+__all__ = ["MegaPoseRGBAdapter", "MegaPoseRGBEstimator"]

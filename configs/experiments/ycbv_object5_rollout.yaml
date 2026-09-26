@@ -1,0 +1,28 @@
+dataset:
+  name: ycbv
+  object_id: 5
+  sequences: ["000050", "000052"]
+  expected_frames: 150
+  detection_source: oracle_bbox_obj
+  modality: rgb
+
+megapose:
+  model_name: megapose-1.0-RGB
+  batch_size: 64
+  renderer_workers: 1
+  tracking_refiner_iterations: 2
+
+recoverability:
+  metric: ADD
+  success_fraction_of_diameter: 0.10
+  object_diameter_m: 0.196463
+  success_threshold_m: 0.0196463
+  history_frames: 5
+  future_frames: 10
+
+split:
+  unit: complete_ycbv_scene
+  train_sequences: ["000050"]
+  validation_sequences: ["000052"]
+  test_sequences: []
+  pilot_only: true
