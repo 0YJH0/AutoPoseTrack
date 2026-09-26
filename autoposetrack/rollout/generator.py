@@ -70,7 +70,9 @@ class RolloutGenerator:
         for sequence_id, sequence_targets in grouped.items():
             self.local_tracker.reset()
             previous: Optional[PoseEstimate] = None
-            for step, target in enumerate(sorted(sequence_targets, key=lambda item: item.frame_id)):
+            for step, target in enumerate(
+                sorted(sequence_targets, key=lambda item: item.frame_id)
+            ):
                 observation = self.dataset.observation(target)
                 annotation = self.dataset.annotation(
                     target.sequence_id, target.frame_id, target.object_id
@@ -82,20 +84,38 @@ class RolloutGenerator:
                         else self.local_tracker.track(observation, previous, self.model)
                     )
                     record = self._record(
-                        f"{sequence_id}:natural", step, observation, annotation, estimate, previous
+                        f"{sequence_id}:natural",
+                        step,
+                        observation,
+                        annotation,
+                        estimate,
+                        previous,
                     )
                     if estimate is not None:
                         previous = estimate
                 except Exception as error:  # noqa: BLE001 - failures are rollout data.
                     record = self._record(
-                        f"{sequence_id}:natural", step, observation, annotation, None, previous,
+                        f"{sequence_id}:natural",
+                        step,
+                        observation,
+                        annotation,
+                        None,
+                        previous,
                         f"{type(error).__name__}: {error}",
                     )
                 records.append(record)
         return records
 
-    def _record(self, rollout_id, step, observation, annotation: PoseAnnotation,
-                estimate, previous, error="") -> RolloutRecord:
+    def _record(
+        self,
+        rollout_id,
+        step,
+        observation,
+        annotation: PoseAnnotation,
+        estimate,
+        previous,
+        error="",
+    ) -> RolloutRecord:
         height, width = observation.rgb.shape[:2]
         x1, y1, x2, y2 = observation.bbox_xyxy
         bbox_area = float((x2 - x1) * (y2 - y1) / (width * height))
@@ -103,30 +123,69 @@ class RolloutGenerator:
         center_y = float((y1 + y2) / (2 * height))
         if estimate is None:
             return RolloutRecord(
-                rollout_id, observation.sequence_id, observation.frame_id,
-                observation.object_id, step, "failed", "none", None, None,
-                bbox_area, center_x, center_y, annotation.visibility_fraction,
-                None, None, None, None, None, None,
-                annotation.object_to_camera.tolist(), error or "no pose candidate",
+                rollout_id,
+                observation.sequence_id,
+                observation.frame_id,
+                observation.object_id,
+                step,
+                "failed",
+                "none",
+                None,
+                None,
+                bbox_area,
+                center_x,
+                center_y,
+                annotation.visibility_fraction,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                annotation.object_to_camera.tolist(),
+                error or "no pose candidate",
             )
         pose_error = (
-            adds_m(estimate.object_to_camera, annotation.object_to_camera, self.model_points_m)
-            if self.symmetric else
-            add_m(estimate.object_to_camera, annotation.object_to_camera, self.model_points_m)
+            adds_m(
+                estimate.object_to_camera,
+                annotation.object_to_camera,
+                self.model_points_m,
+            )
+            if self.symmetric
+            else add_m(
+                estimate.object_to_camera,
+                annotation.object_to_camera,
+                self.model_points_m,
+            )
         )
         return RolloutRecord(
-            rollout_id, observation.sequence_id, observation.frame_id,
-            observation.object_id, step, "ok", estimate.mode.value, estimate.score,
-            estimate.runtime_s, bbox_area, center_x, center_y,
+            rollout_id,
+            observation.sequence_id,
+            observation.frame_id,
+            observation.object_id,
+            step,
+            "ok",
+            estimate.mode.value,
+            estimate.score,
+            estimate.runtime_s,
+            bbox_area,
+            center_x,
+            center_y,
             annotation.visibility_fraction,
-            None if previous is None else translation_error_m(
+            None
+            if previous is None
+            else translation_error_m(
                 estimate.object_to_camera, previous.object_to_camera
             ),
-            None if previous is None else rotation_error_deg(
+            None
+            if previous is None
+            else rotation_error_deg(
                 estimate.object_to_camera, previous.object_to_camera
             ),
             pose_error,
             rotation_error_deg(estimate.object_to_camera, annotation.object_to_camera),
             translation_error_m(estimate.object_to_camera, annotation.object_to_camera),
-            estimate.object_to_camera.tolist(), annotation.object_to_camera.tolist(), error,
+            estimate.object_to_camera.tolist(),
+            annotation.object_to_camera.tolist(),
+            error,
         )

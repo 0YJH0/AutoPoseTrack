@@ -1,0 +1,24 @@
+recoverable_basin:
+  object_id: 5
+  sequences: ["000050", "000052"]
+  anchor_stride: 10
+  rotation_degrees: [0, 10, 20, 40]
+  translation_metres: [0, 0.01, 0.03, 0.06]
+  perturbation_frame: object_local_right_composition
+  future_frames: 10
+  success_metric: ADD
+  success_fraction_of_diameter: 0.10
+
+temporal_predictor:
+  history_frames: 5
+  frozen_pose_experts: true
+  gt_features_at_inference: false
+
+routing:
+  local_cost: 0.15
+  global_cost: 13.7
+  failure_cost: 30.0
+  track_probability: 0.70
+  lost_probability: 0.30
+  consecutive_lost_frames: 2
+  global_cooldown_frames: 10

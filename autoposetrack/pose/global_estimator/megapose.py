@@ -50,6 +50,7 @@ class MegaPoseRGBAdapter(GlobalPoseEstimator, LocalPoseTracker):
             [RigidObject(label=self.label, mesh_path=model.mesh_path, mesh_units="mm")]
         )
         self.model_name = model_name
+        self._closed = False
         if tracking_refiner_iterations <= 0:
             raise ValueError("tracking_refiner_iterations must be positive")
         self.tracking_refiner_iterations = tracking_refiner_iterations
@@ -164,13 +165,22 @@ class MegaPoseRGBAdapter(GlobalPoseEstimator, LocalPoseTracker):
 
     def close(self) -> None:
         """Stop MegaPose renderer workers so batch jobs terminate cleanly."""
+        if self._closed:
+            return
+        models = (self._estimator.coarse_model, self._estimator.refiner_model)
         renderers = {
             id(model.renderer): model.renderer
-            for model in (self._estimator.coarse_model, self._estimator.refiner_model)
+            for model in models
             if model is not None
         }
         for renderer in renderers.values():
             renderer.stop()
+        # Release the shared renderer while upstream logging is still alive;
+        # otherwise its destructor runs during interpreter shutdown.
+        for model in models:
+            if model is not None:
+                model.renderer = None
+        self._closed = True
 
     @staticmethod
     def _extract_score(row: Any) -> Optional[float]:

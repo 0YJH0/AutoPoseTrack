@@ -96,6 +96,8 @@ summary is under `reports/ycbv_object5_rollout_pilot/`.
 
 完整的数据下载、目录放置、训练和测试命令见
 [`docs/中文训练与测试指南.md`](docs/中文训练与测试指南.md)。
+恢复域采样、因果时序预测和成本敏感闭环路由的定义见
+[`docs/创新版算法与训练协议.md`](docs/创新版算法与训练协议.md)。
 
 ## Installation
 

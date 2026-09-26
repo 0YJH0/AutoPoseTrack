@@ -1,7 +1,11 @@
 import numpy as np
 import pytest
 
-from autoposetrack.reliability import FEATURE_NAMES, build_recoverability_features
+from autoposetrack.reliability import (
+    FEATURE_NAMES,
+    build_recoverability_features,
+    build_temporal_recoverability_features,
+)
 
 
 def _row(step, error, score=0.5, sequence="000050"):
@@ -38,6 +42,18 @@ def test_features_do_not_mix_rollout_horizons():
     rows = [_row(0, None, sequence="000050"), _row(0, 0.001, sequence="000052")]
     dataset = build_recoverability_features(rows, diameter_m=0.1, future_frames=10)
     np.testing.assert_array_equal(dataset.labels, [0, 1])
+
+
+def test_temporal_features_contain_causal_lags_and_masks():
+    rows = [_row(0, 0.04), _row(1, 0.009)]
+    dataset = build_temporal_recoverability_features(
+        rows, diameter_m=0.1, history_frames=2, future_frames=1
+    )
+    assert dataset.features.shape == (2, 18)
+    assert dataset.feature_names[-2:] == ("lag_1_valid", "lag_0_valid")
+    np.testing.assert_allclose(dataset.features[0, -2:], [0, 1])
+    np.testing.assert_allclose(dataset.features[1, -2:], [1, 1])
+    assert dataset.metadata["representation"] == "causal_flattened_temporal_window"
 
 
 def test_feature_configuration_is_validated():

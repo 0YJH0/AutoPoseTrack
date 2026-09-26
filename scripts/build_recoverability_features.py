@@ -10,7 +10,10 @@ from pathlib import Path
 
 import numpy as np
 
-from autoposetrack.reliability import build_recoverability_features
+from autoposetrack.reliability import (
+    build_recoverability_features,
+    build_temporal_recoverability_features,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -23,6 +26,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--success-fraction", type=float, default=0.10)
     parser.add_argument("--train-sequence", action="append")
     parser.add_argument("--validation-sequence", action="append")
+    parser.add_argument(
+        "--summary-features",
+        action="store_true",
+        help="use the legacy summary baseline instead of a causal temporal window",
+    )
     return parser.parse_args()
 
 
@@ -30,7 +38,12 @@ def main() -> None:
     args = parse_args()
     with args.rollout.expanduser().resolve().open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle))
-    dataset = build_recoverability_features(
+    builder = (
+        build_recoverability_features
+        if args.summary_features
+        else build_temporal_recoverability_features
+    )
+    dataset = builder(
         rows, args.diameter_m, args.history_frames, args.future_frames,
         args.success_fraction,
     )
