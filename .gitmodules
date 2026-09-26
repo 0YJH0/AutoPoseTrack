@@ -1,3 +1,6 @@
 [submodule "third_party/MegaPose"]
 	path = third_party/MegaPose
 	url = https://github.com/megapose6d/megapose6d.git
+[submodule "third_party/Gen6D"]
+	path = third_party/Gen6D
+	url = https://github.com/liuyuan-pal/Gen6D.git

@@ -1,6 +1,6 @@
 # AutoPoseTrack research plan
 
-Last updated: 2026-09-25
+Last updated: 2026-09-26
 
 ## Research claim and falsifiable question
 
@@ -26,6 +26,8 @@ better per-frame pose score.
   and offline metrics.
 - Inference modality is monocular RGB. Depth images, depth-derived features,
   ICP, and RGB-D checkpoints are prohibited in the primary protocol.
+- The primary protocol uses posed RGB reference images and does not expose a
+  precise CAD model to the estimator. CAD-enabled runs are auxiliary studies.
 - All third-party revisions, data splits, seeds, configurations, checkpoints,
   and hardware are recorded.
 - Every reported aggregate is reproducible from saved per-frame predictions.
@@ -43,8 +45,8 @@ Delivered:
 
 - research-oriented repository skeleton;
 - verified WSL/Docker GPU environment;
-- audited FoundationPose, GigaPose, MegaPose, and BundleSDF/BundleTrack;
-- selected MegaPose RGB coarse estimation plus RGB refinement as the first baseline;
+- audited reference-based and CAD-enabled estimator families;
+- selected Gen6D as the development baseline and MegaPose as a CAD auxiliary;
 - recorded unresolved choices in `docs/open_questions.md`.
 
 Gate: documentation is internally consistent and makes no performance claim.
@@ -53,16 +55,16 @@ Gate: documentation is internally consistent and makes no performance claim.
 
 1. **GPU/environment preflight.** Record driver, CUDA runtime/toolkit, GPU,
    VRAM, image digest, and upstream commit (host/container GPU already verified).
-2. **Upstream smoke test.** Run the official MegaPose RGB demo
+2. **Upstream smoke test.** Run the official Gen6D GenMOP/LINEMOD evaluation
    unchanged. Archive its command, logs, output visualization, and runtime.
-3. **Pinned external dependency.** Add MegaPose under `third_party/` as a
+3. **Pinned external dependency.** Add Gen6D under `third_party/` as a
    pinned submodule or external checkout; record patches separately. Never copy
    its implementation into `autoposetrack/`.
 4. **Data contract.** Implement a YCB-Video sequence loader returning RGB,
    intrinsics, detection box, optional RGB-derived mask, object id, and
    timestamp/frame id. GT pose remains evaluation-only.
-5. **Adapters.** Define narrow `GlobalPoseEstimator` and `LocalPoseTracker`
-   protocols and wrap MegaPose RGB coarse estimation/refinement. Preserve
+5. **Adapters.** Define reference/CAD-neutral `GlobalPoseEstimator` and
+   `LocalPoseTracker` protocols and wrap Gen6D first. Preserve
    upstream scores and timing as raw outputs.
 6. **Prediction schema.** Persist one row per frame/object plus event records;
    never hide failed frames. Include validity/error fields rather than NaNs with

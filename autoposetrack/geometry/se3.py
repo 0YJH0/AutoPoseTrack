@@ -60,3 +60,22 @@ def translation_error_m(prediction: npt.ArrayLike, target: npt.ArrayLike) -> flo
     true = validate_transform(target)
     return float(np.linalg.norm(pred[:3, 3] - true[:3, 3]))
 
+
+def project_to_se3(
+    transform: npt.ArrayLike, max_rotation_residual: float = 0.1
+) -> tuple[np.ndarray, float]:
+    """Project small numerical rotation drift onto SO(3)."""
+    pose = np.asarray(transform, dtype=np.float64)
+    if pose.shape != (4, 4) or not np.isfinite(pose).all():
+        raise ValueError("pose must be a finite 4x4 transform")
+    rotation = pose[:3, :3]
+    residual = float(np.linalg.norm(rotation.T @ rotation - np.eye(3), ord="fro"))
+    if residual > max_rotation_residual:
+        raise ValueError(f"rotation residual is too large: {residual:.6g}")
+    left, _, right_t = np.linalg.svd(rotation)
+    correction = np.eye(3)
+    correction[-1, -1] = np.linalg.det(left @ right_t)
+    projected = pose.copy()
+    projected[:3, :3] = left @ correction @ right_t
+    projected[3] = [0.0, 0.0, 0.0, 1.0]
+    return projected, residual

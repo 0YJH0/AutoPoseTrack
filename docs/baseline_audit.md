@@ -1,34 +1,35 @@
 # Phase 0 baseline and code audit
 
-Audited: 2026-09-25. This is a code-integration audit, not a reproduced accuracy
+Audited: 2026-09-26. This is a code-integration audit, not a reproduced accuracy
 or speed comparison. Runtime values vary with hardware and protocol; GPU
 transport is verified but no pose baseline has been run.
 
 ## Decision
 
-Use **MegaPose RGB** as the first complete baseline, behind
-two project-owned adapters:
+Use **Gen6D** as the development baseline because its posed RGB reference input
+and lack of a precise-CAD requirement match the primary paper setting. First
+reproduce the unchanged upstream GenMOP/LINEMOD evaluation, then use a
+project-owned `Gen6DAdapter` for autonomous initialization and relocalization.
 
-- coarse estimation as `GlobalPoseEstimator` for initialization/relocalization;
-- RGB refinement as `LocalPoseTracker`, initialized from the previous pose.
+MegaPose's already verified RGB coarse/refinement path is retained only as a
+**CAD-enabled auxiliary baseline**. It validates infrastructure and later tests
+whether the proposed router transfers across different estimator assumptions;
+it must not silently define the primary protocol.
 
-The official release defaults to RGB input and exposes coarse estimation plus
-render-and-compare refinement, pretrained checkpoints, YCB-V assets, and an
-official Docker image. Using one pose stack minimizes cross-project convention
-and renderer mismatch. The primary protocol forbids depth, ICP, and RGB-D
-checkpoints.
-
-This recommendation is conditional on a successful pinned upstream RGB smoke
-test. MegaPose's top-level code is Apache-2.0 unless otherwise specified; nested
-renderers, assets, datasets, weights, and images still require separate review.
+The distinction between development baseline, per-experiment base model, and
+paper comparison method is normative; see `docs/method_roles.md`.
 
 ## Candidate comparison
 
 | Candidate | Official repository / license | Inputs and object prior | Segmentation / initialization | Tracking and YCB-V | Weights, cost, integration |
 |---|---|---|---|---|---|
+| Gen6D (ECCV 2022) | [liuyuan-pal/Gen6D](https://github.com/liuyuan-pal/Gen6D), review upstream/nested licenses | RGB; posed multi-view references and SfM-derived sparse object geometry; no precise CAD | Reference database supplies known camera poses; detector/selector/refiner pipeline | Global estimator with prior-pose refinement option; YCB-V onboarding must be prepared without leakage | Pretrained components are linked upstream, while original training data are no longer fully distributed. **Selected development baseline.** |
+| NOPE (CVPR 2024) | [nv-nguyen/nope](https://github.com/nv-nguyen/nope) | RGB query plus one RGB reference; no CAD | Estimates relative pose distribution | Global relative-pose comparison, not native long-term recovery | Add after Gen6D pipeline is complete. |
+| DVMNet (CVPR 2024) | [sailor-z/DVMNet](https://github.com/sailor-z/DVMNet) | RGB reference/query pair; no precise CAD | Single-pass relative pose via voxel matching | Includes a 6D variant; integration protocol must fix translation/scale conventions | Planned stronger global estimator and comparison. |
+| OrienPose (CVPR 2026) | [pubyLu/OrienPose](https://github.com/pubyLu/OrienPose) | Single RGB reference; CAD-free | Orientation-guided novel-view synthesis and matching | Recent global estimator; not a native recovery framework | Priority recent comparison, but not a critical-path dependency. |
 | FoundationPose (CVPR 2024) | [NVlabs/FoundationPose](https://github.com/NVlabs/FoundationPose), NVIDIA Source Code License | RGB-D for released model-based pipeline; CAD mesh, intrinsics, depth | Requires object mask for registration; registration does not require a pose; tracking takes prior pose | Native registration **and** tracking; official `run_ycb_video.py` | Released refiner/scorer weights. CUDA renderer and compiled extensions; upstream recommends Docker. Registration is much heavier than tracking; benchmark locally. **Medium-high** setup risk, **low** conceptual adapter risk. |
 | GigaPose (CVPR 2024) | [nv-nguyen/gigaPose](https://github.com/nv-nguyen/gigaPose), MIT except inherited components | RGB, CAD-rendered templates; optional downstream refiner | Requires detection/segmentation (official pipeline uses CNOS detections); no prior pose | Global per-image estimation, not a temporal tracker; BOP-format evaluation includes YCB-V-era datasets/config lineage but current README paths focus BOP challenge sets—verify exact YCB-V recipe at pinned commit | Checkpoint download scripts supplied. Template onboarding plus coarse/refinement stack; paper emphasizes speed but measure total detection+render+refine cost. **Medium-high** integration, requiring a separate tracker. |
-| MegaPose (CoRL 2022) | [megapose6d/megapose6d](https://github.com/megapose6d/megapose6d), Apache-2.0 unless noted | RGB by default; CAD mesh, intrinsics, bounding box | Requires labeled 2D detection/box; coarse hypotheses plus render-and-compare refinement | Use coarse model globally and previous-pose initialized RGB refinement locally; official YCB-V example and BOP assets | Pretrained RGB models and Docker image supplied. Mature but large rendering stack. **Selected first baseline.** |
+| MegaPose (CoRL 2022) | [megapose6d/megapose6d](https://github.com/megapose6d/megapose6d), Apache-2.0 unless noted | RGB by default; **precise CAD mesh**, intrinsics, bounding box | Requires labeled 2D detection/box; coarse hypotheses plus render-and-compare refinement | Coarse global estimation and previous-pose RGB refinement are verified locally | Mature and stable, but its CAD assumption differs from the primary setting. **CAD-enabled auxiliary baseline only.** |
 | BundleSDF (CVPR 2023) / BundleTrack (CVPR 2021) | [FreeArtGS/BundleSDF](https://github.com/FreeArtGS/BundleSDF) and [wenbowen123/BundleTrack](https://github.com/wenbowen123/BundleTrack); verify all nested licenses before use | RGB-D video; designed for unknown objects; BundleSDF jointly reconstructs geometry | First-frame object mask; no CAD required; not autonomous category/object discovery | Strong temporal tracking/reconstruction, but official evaluations center on HO3D, YCBInEOAT, and BEHAVE rather than YCB-Video tracking protocol | Multiple native/CUDA components and pretrained feature/segmentation dependencies; concurrent reconstruction makes controlled local-basin experiments expensive. **Very high** integration. Useful later as a tracker comparison, not Phase 1. |
 
 ## Detailed fit analysis

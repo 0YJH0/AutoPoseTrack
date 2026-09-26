@@ -1,18 +1,17 @@
 # Open questions and decision gates
 
-Last updated: 2026-09-25
+Last updated: 2026-09-26
 
 Questions are recorded here instead of being silently resolved in code.
 
 ## Blocking before Phase 1
 
-1. **Pinned baseline:** Which reviewed MegaPose commit and immutable Docker image
-   digest will anchor Phase 1? Record any adapter patches separately.
-2. **License review:** Review MegaPose's nested renderer, weights, asset, and
-   dataset licenses even though project-owned code is Apache-2.0/MIT compatible.
-3. **Dataset availability:** Which YCB-Video distribution is locally available
-   (original layout, BOP YCB-V, or both), and where? Paths must enter only through
-   configuration/environment, never source code.
+1. **Gen6D reproduction assets:** Obtain the official pretrained detector,
+   selector and refiner weights plus an official GenMOP/LINEMOD evaluation set.
+2. **License review:** Review Gen6D code, nested dependencies, weights and data;
+   separately retain the existing MegaPose auxiliary-baseline review.
+3. **Reference onboarding:** Define a leakage-free source of posed YCB-V RGB
+   references and a metric SfM scale. Test frames may never serve as references.
 
 ## Protocol decisions before full YCB-Video runs
 
@@ -26,8 +25,8 @@ Questions are recorded here instead of being silently resolved in code.
    conventions before freezing tables.
 7. Which mask protocol is used for silhouette reliability: no mask, GT mask as
    an oracle ablation, or a fixed RGB-derived mask? Never mix them silently.
-8. How is metric object scale converted when MegaPose meshes use millimetres but
-   the project boundary requires metres?
+8. How is Gen6D's SfM reconstruction aligned and scaled to the metric object
+   frame? Record the transform; do not infer scale from test GT.
 
 ## Decisions deferred until Phase 2/3 evidence
 

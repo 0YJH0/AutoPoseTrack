@@ -1,0 +1,28 @@
+experiment:
+  role: development_baseline
+  estimator: gen6d
+  modality: rgb
+  precise_cad_at_inference: false
+
+reference_object:
+  source: posed_rgb_views
+  gen6d_database: /REPLACE/WITH/GEN6D_DATABASE_NAME
+  translation_scale_to_m: /REPLACE/WITH/METRIC_SCALE
+  require_known_reference_poses: true
+  require_sparse_sfm_geometry: true
+
+global_estimator:
+  config: third_party/Gen6D/configs/gen6d_pretrain.yaml
+  preserve_diagnostics:
+    - selector_max_score
+    - selector_score_margin
+    - detected_scale
+    - selected_inplane_angle
+    - refinement_steps
+
+protocol:
+  autonomous_initialization: true
+  gt_initial_pose: false
+  depth_at_inference: false
+  cad_at_inference: false
+  status: upstream_reproduction_pending

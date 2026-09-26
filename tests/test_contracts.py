@@ -6,8 +6,10 @@ import pytest
 from autoposetrack.contracts import (
     FrameObservation,
     ModelReference,
+    PosedReferenceImage,
     PoseEstimate,
     PoseMode,
+    ReferenceObject,
 )
 
 
@@ -62,3 +64,17 @@ def test_pose_contract_rejects_negative_runtime():
 def test_model_reference_is_path_only():
     model = ModelReference(2, Path("models/obj_000002.ply"), 0.172)
     assert model.object_id == 2
+
+
+def test_posed_reference_contract_is_cad_free(tmp_path):
+    image = tmp_path / "reference.png"
+    image.touch()
+    view = PosedReferenceImage(image, np.eye(4), np.eye(3))
+    reference = ReferenceObject(
+        object_id=5,
+        views=(view,),
+        diameter_m=0.1,
+        backend_metadata={"gen6d_database": "custom/object"},
+    )
+    reference.validate()
+    assert not hasattr(reference, "mesh_path")

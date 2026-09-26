@@ -13,6 +13,7 @@ from autoposetrack.contracts import (
     PoseEstimate,
     PoseMode,
 )
+from autoposetrack.geometry import project_to_se3
 from autoposetrack.pose.interfaces import GlobalPoseEstimator, LocalPoseTracker
 
 
@@ -86,7 +87,7 @@ class MegaPoseRGBAdapter(GlobalPoseEstimator, LocalPoseTracker):
         if len(output) == 0:
             return None
         raw_pose = np.asarray(output.poses[0].detach().cpu().numpy(), dtype=np.float64)
-        pose, rotation_residual = _project_to_se3(raw_pose)
+        pose, rotation_residual = project_to_se3(raw_pose)
         score = self._extract_score(output.infos.iloc[0])
         estimate = PoseEstimate(
             object_to_camera=pose,
@@ -144,7 +145,7 @@ class MegaPoseRGBAdapter(GlobalPoseEstimator, LocalPoseTracker):
         if len(output) == 0:
             return None
         raw_pose = np.asarray(output.poses[0].detach().cpu().numpy(), dtype=np.float64)
-        pose, rotation_residual = _project_to_se3(raw_pose)
+        pose, rotation_residual = project_to_se3(raw_pose)
         estimate = PoseEstimate(
             object_to_camera=pose,
             score=self._extract_score(output.infos.iloc[0]),
@@ -191,21 +192,8 @@ class MegaPoseRGBAdapter(GlobalPoseEstimator, LocalPoseTracker):
 
 
 def _project_to_se3(pose: np.ndarray) -> tuple[np.ndarray, float]:
-    """Project small network-output rotation drift to the closest SO(3)."""
-
-    if pose.shape != (4, 4) or not np.isfinite(pose).all():
-        raise ValueError("MegaPose returned an invalid 4x4 transform")
-    rotation = pose[:3, :3]
-    residual = float(np.linalg.norm(rotation.T @ rotation - np.eye(3), ord="fro"))
-    if residual > 0.1:
-        raise ValueError(f"MegaPose rotation residual is too large: {residual:.6g}")
-    left, _, right_t = np.linalg.svd(rotation)
-    correction = np.eye(3)
-    correction[-1, -1] = np.linalg.det(left @ right_t)
-    projected = pose.copy()
-    projected[:3, :3] = left @ correction @ right_t
-    projected[3] = [0.0, 0.0, 0.0, 1.0]
-    return projected, residual
+    """Backward-compatible alias for earlier adapter users."""
+    return project_to_se3(pose)
 
 
 class MegaPoseRGBEstimator(MegaPoseRGBAdapter):

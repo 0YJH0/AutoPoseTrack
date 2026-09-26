@@ -10,7 +10,7 @@ benchmark construction, and offline evaluation.
 
 ## Status
 
-**Phase 1 smoke path operational (2026-09-26):** the repository now includes a
+**Auxiliary CAD smoke path operational (2026-09-26):** the repository includes a
 BOP YCB-V single-object reader/index, a pinned MegaPose RGB adapter, strict
 inference/evaluation separation, headless GPU Docker execution, pose metrics,
 and structured run logs. The initial one-frame result is only an environment
@@ -22,14 +22,19 @@ frames of history and labels whether ADD(-S) reaches `0.10 * object_diameter`
 at the current frame or within the next ten frames. This two-scene split is an
 engineering pilot and has no independent paper test set.
 
-The first recommended baseline is **MegaPose RGB** behind an adapter: its coarse
-estimator provides initialization/relocalization and its RGB refiner uses the
-previous pose for local tracking. Depth is prohibited at inference. See
-[the baseline audit](docs/baseline_audit.md) for the decision and caveats.
+The primary development baseline is now **Gen6D**: RGB-only, reference-based,
+and free of precise CAD at inference. MegaPose remains a verified CAD-enabled
+auxiliary baseline and must not define the paper's main setting. See
+[the method-role policy](docs/method_roles.md) and
+[the baseline audit](docs/baseline_audit.md).
+Gen6D setup and the still-pending official reproduction gate are recorded in
+[`docs/gen6d_reproduction.md`](docs/gen6d_reproduction.md).
 
 ## What is implemented
 
 - Strict RGB-only `FrameObservation` contract with no ground-truth or depth field.
+- Neutral posed-reference `ReferenceObject` contract with optional SfM assets.
+- Pinned Gen6D source and a lazy adapter matching its real `build/predict` API.
 - Separate annotation interface used only by offline evaluation.
 - Global estimator, local tracker, and reliability estimator interfaces.
 - Object-to-camera SE(3) utilities using metres and column-vector composition.

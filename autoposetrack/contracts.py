@@ -78,6 +78,58 @@ class PoseEstimate:
 
 @dataclass(frozen=True)
 class ModelReference:
+    """CAD-enabled reference retained for auxiliary model-based baselines."""
+
     object_id: int
     mesh_path: Path
     diameter_m: Optional[float] = None
+
+
+@dataclass(frozen=True)
+class PosedReferenceImage:
+    """One RGB reference view with a known object-to-camera pose."""
+
+    image_path: Path
+    object_to_camera: FloatArray
+    camera_matrix: FloatArray
+    mask_path: Optional[Path] = None
+
+    def validate(self) -> None:
+        from autoposetrack.geometry.se3 import validate_transform
+
+        if not self.image_path.is_file():
+            raise FileNotFoundError(f"reference image not found: {self.image_path}")
+        validate_transform(self.object_to_camera)
+        if self.camera_matrix.shape != (3, 3) or not np.isfinite(
+            self.camera_matrix
+        ).all():
+            raise ValueError("reference camera_matrix must be finite 3x3")
+        if self.mask_path is not None and not self.mask_path.is_file():
+            raise FileNotFoundError(f"reference mask not found: {self.mask_path}")
+
+
+@dataclass(frozen=True)
+class ReferenceObject:
+    """CAD-free object onboarding data shared by reference-based estimators.
+
+    ``backend_metadata`` may point an adapter to a preprocessed SfM database,
+    but the tracking pipeline only depends on this neutral contract.
+    """
+
+    object_id: int
+    views: tuple[PosedReferenceImage, ...]
+    diameter_m: Optional[float] = None
+    sparse_point_cloud_path: Optional[Path] = None
+    backend_metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def validate(self) -> None:
+        if not self.views:
+            raise ValueError("reference-based estimators require at least one view")
+        for view in self.views:
+            view.validate()
+        if self.diameter_m is not None and self.diameter_m <= 0:
+            raise ValueError("diameter_m must be positive when provided")
+        if self.sparse_point_cloud_path is not None and not self.sparse_point_cloud_path.is_file():
+            raise FileNotFoundError(
+                f"reference point cloud not found: {self.sparse_point_cloud_path}"
+            )
