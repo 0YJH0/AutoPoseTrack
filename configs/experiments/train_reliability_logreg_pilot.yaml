@@ -1,0 +1,19 @@
+experiment:
+  name: reliability_logreg_ycbv_object5_pilot
+  seed: 2027
+data:
+  feature_dataset: /data/features/recoverability_features.npz
+split:
+  # Seed 2027 maps 000050 to train and 000052 to validation.
+  strategy: sequence_hash
+  validation_fraction: 0.2
+  test_fraction: 0.2
+model:
+  name: logistic_regression_gd
+  learning_rate: 0.05
+  epochs: 500
+  l2: 0.0001
+logging:
+  console_every_epochs: 10
+output:
+  directory: outputs/reliability_logreg_ycbv_object5_pilot

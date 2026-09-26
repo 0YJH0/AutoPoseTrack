@@ -94,6 +94,9 @@ imbalanced for reliability training. Seeded SE(3) perturbation rollouts must be
 added before fitting or comparing recoverability models. The checked-in compact
 summary is under `reports/ycbv_object5_rollout_pilot/`.
 
+完整的数据下载、目录放置、训练和测试命令见
+[`docs/中文训练与测试指南.md`](docs/中文训练与测试指南.md)。
+
 ## Installation
 
 The lightweight core does not install MegaPose or download datasets:
