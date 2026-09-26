@@ -1,0 +1,26 @@
+protocol:
+  name: continuous_tracking
+  category: natural_temporal_tracking
+  temporal: true
+  required_inputs:
+    - consecutive_rgb_frames
+    - ordered_sequence_ids
+    - camera_intrinsics
+    - gt_pose_for_evaluation
+    - fps_or_timestamps
+    - posed_reference_manifest
+  sequence_split_required: true
+  current_ycbv_bop19_status: incompatible_sparse_keyframes
+  metrics:
+    - initialization_success_rate
+    - failure_detection
+    - recovery_success_rate
+    - recovery_latency_frames
+    - lost_time_ratio
+    - global_invocation_rate
+    - tracking_survival_frames
+    - false_recovery_acceptance
+  stratification:
+    status: not_frozen
+    requirement: derive_on_validation_then_freeze_before_test
+

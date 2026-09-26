@@ -1,0 +1,115 @@
+{
+  "analysis_type": "continuous_error_attribute_alignment",
+  "attribute_trends": {
+    "bbox_area_ratio": {
+      "num_samples": 150,
+      "spearman_error_correlation": -0.4944953359923134
+    },
+    "max_bbox_overlap": {
+      "num_samples": 150,
+      "spearman_error_correlation": 0.47308811332799117
+    },
+    "nearest_reference_angle": {
+      "num_samples": 0,
+      "spearman_error_correlation": null
+    },
+    "num_instances": {
+      "num_samples": 150,
+      "spearman_error_correlation": -0.35611755984764554
+    },
+    "rotation_delta_deg": {
+      "num_samples": 148,
+      "spearman_error_correlation": -0.029344369708703362
+    },
+    "sharpness_score": {
+      "num_samples": 150,
+      "spearman_error_correlation": 0.4610036001600071
+    },
+    "translation_delta": {
+      "num_samples": 148,
+      "spearman_error_correlation": 0.11817337128938281
+    },
+    "visibility_fraction": {
+      "num_samples": 150,
+      "spearman_error_correlation": -0.28677007867016313
+    },
+    "visible_area_ratio": {
+      "num_samples": 150,
+      "spearman_error_correlation": -0.45146482456667375
+    }
+  },
+  "error_field": "pose_error_m",
+  "error_summary": {
+    "max": 0.09722326961181055,
+    "mean": 0.019144439094239817,
+    "median": 0.018450905587266052,
+    "q75": 0.023031851583588017,
+    "q90": 0.02600457234974
+  },
+  "largest_error_frames": [
+    {
+      "frame_id": 388,
+      "object_id": 5,
+      "pose_error_m": 0.09722326961181055,
+      "sequence_id": "000052"
+    },
+    {
+      "frame_id": 620,
+      "object_id": 5,
+      "pose_error_m": 0.030010194804428007,
+      "sequence_id": "000050"
+    },
+    {
+      "frame_id": 587,
+      "object_id": 5,
+      "pose_error_m": 0.029638132724892602,
+      "sequence_id": "000052"
+    },
+    {
+      "frame_id": 574,
+      "object_id": 5,
+      "pose_error_m": 0.02895792234528014,
+      "sequence_id": "000052"
+    },
+    {
+      "frame_id": 629,
+      "object_id": 5,
+      "pose_error_m": 0.028636468463811623,
+      "sequence_id": "000050"
+    },
+    {
+      "frame_id": 623,
+      "object_id": 5,
+      "pose_error_m": 0.028521222467560385,
+      "sequence_id": "000050"
+    },
+    {
+      "frame_id": 608,
+      "object_id": 5,
+      "pose_error_m": 0.028016797562967533,
+      "sequence_id": "000052"
+    },
+    {
+      "frame_id": 638,
+      "object_id": 5,
+      "pose_error_m": 0.027929269016844137,
+      "sequence_id": "000052"
+    },
+    {
+      "frame_id": 643,
+      "object_id": 5,
+      "pose_error_m": 0.027095259722947497,
+      "sequence_id": "000052"
+    },
+    {
+      "frame_id": 593,
+      "object_id": 5,
+      "pose_error_m": 0.027009689850745783,
+      "sequence_id": "000052"
+    }
+  ],
+  "num_joined": 150,
+  "num_predictions": 150,
+  "schema_version": 1,
+  "threshold_free": true
+}

@@ -1,0 +1,18 @@
+protocol:
+  name: bop_pose
+  category: standard_pose_estimation
+  temporal: false
+  dataset_format: bop
+  allowed_uses:
+    - single_frame_pose_comparison
+    - global_estimator_comparison
+    - bop_metrics
+  prohibited_claims:
+    - continuous_tracking
+    - recovery_latency
+    - tracking_survival
+  join_keys: [sequence_id, frame_id, object_id]
+  stratification:
+    status: not_frozen
+    requirement: derive_on_validation_then_freeze_before_test
+
