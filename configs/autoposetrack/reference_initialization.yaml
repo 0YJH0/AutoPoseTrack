@@ -1,0 +1,31 @@
+reference:
+  num_refs: 1
+  encoder: dinov2_vits14
+  device: cuda:0
+  use_mask: true
+  crop_size: 224
+  bbox_expansion: 1.2
+  background: mean
+
+proposal:
+  backend: sam
+  model_type: vit_b
+  checkpoint: data/models/sam/sam_vit_b_01ec64.pth
+  device: cuda:0
+  points_per_side: 24
+  pred_iou_threshold: 0.72
+  stability_threshold: 0.78
+  min_area: 100
+  max_area_ratio: 0.8
+  duplicate_iou: 0.9
+  max_proposals: 100
+
+matching:
+  aggregation: max
+  top_k_average: 2
+  acceptance_score: 0.45
+  acceptance_margin: 0.02
+
+evaluation:
+  mask_iou_threshold: 0.5
+  top_k: [1, 3, 5]

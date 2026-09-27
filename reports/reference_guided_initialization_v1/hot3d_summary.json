@@ -1,0 +1,19 @@
+{
+  "dataset": "hot3d",
+  "failure_counts": {
+    "success": 3
+  },
+  "gt_usage": "reference_mask_and_post_inference_evaluator_only",
+  "matching_accuracy_given_oracle": 1.0,
+  "mean_best_proposal_iou": 0.8591666627325183,
+  "mean_selected_mask_iou": 0.8591666627325183,
+  "num_queries": 3,
+  "object_id": "29",
+  "oracle_proposal_recall": 1.0,
+  "recall_at_1": 1.0,
+  "recall_at_3": 1.0,
+  "recall_at_5": 1.0,
+  "reference_indices": [
+    0
+  ]
+}

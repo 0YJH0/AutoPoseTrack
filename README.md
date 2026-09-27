@@ -249,6 +249,15 @@ python -m scripts.run_dynamic_motion_proposals \
 Each run writes `motion_proposals.mp4`, six-panel debug images, per-frame
 timings, proposals, per-instance metrics, and `summary.json`.
 
+## Reference-guided autonomous initialization
+
+The first autonomous stage now implements official SAM full-frame proposals,
+DINOv2 masked-crop descriptors, cosine Top-K matching, acceptance by score and
+margin, and evaluator-only GT metrics on YCBInEOAT and HOT3D. Proposal recall
+and matching accuracy are reported separately so model failures are not mixed.
+See [the initialization protocol](docs/reference_guided_initialization.md) and
+[failure taxonomy](docs/reference_matching_failure_analysis.md).
+
 The optional `TorchCudaMotionBackend` accelerates dense background-flow,
 residual, magnitude, and threshold computation. On the local RTX 4060 it reduced
 that isolated 576×768 stage from 85.11 ms to 6.13 ms (13.87× mean speedup) with

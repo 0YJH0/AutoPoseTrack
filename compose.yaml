@@ -56,6 +56,8 @@ services:
     volumes:
       - .:/workspace/AutoPoseTrack
       - ${MOTION_INPUT_ROOT:-./data}:/data/motion-input:ro
+    environment:
+      TORCH_HOME: /workspace/AutoPoseTrack/data/models/torch
     command: bash
     stdin_open: true
     tty: true

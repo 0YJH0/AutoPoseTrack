@@ -54,7 +54,7 @@ RUN apt-get update \
 COPY pyproject.toml README.md LICENSE ./
 COPY autoposetrack ./autoposetrack
 RUN python -m pip install --upgrade pip \
-    && python -m pip install ".[motion,motion-cuda]"
+    && python -m pip install ".[motion,motion-cuda,autonomous-init]"
 COPY configs ./configs
 COPY docs ./docs
 COPY scripts ./scripts

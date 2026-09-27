@@ -1,0 +1,20 @@
+{
+  "dataset": "ycbineoat",
+  "failure_counts": {
+    "matching_failure": 1,
+    "success": 2
+  },
+  "gt_usage": "reference_mask_and_post_inference_evaluator_only",
+  "matching_accuracy_given_oracle": 0.6666666666666666,
+  "mean_best_proposal_iou": 0.7741665016790451,
+  "mean_selected_mask_iou": 0.5938644950998465,
+  "num_queries": 3,
+  "object_id": "cracker_box_reorient",
+  "oracle_proposal_recall": 1.0,
+  "recall_at_1": 0.6666666666666666,
+  "recall_at_3": 1.0,
+  "recall_at_5": 1.0,
+  "reference_indices": [
+    117
+  ]
+}
