@@ -251,10 +251,13 @@ timings, proposals, per-instance metrics, and `summary.json`.
 
 ## Reference-guided autonomous initialization
 
-The first autonomous stage now implements official SAM full-frame proposals,
-DINOv2 masked-crop descriptors, cosine Top-K matching, acceptance by score and
-margin, and evaluator-only GT metrics on YCBInEOAT and HOT3D. Proposal recall
-and matching accuracy are reported separately so model failures are not mixed.
+The first autonomous stage supports FastSAM-s at 640 px (default) and original
+SAM (baseline), retains the best 50 full-frame proposals, then applies FP16
+DINOv2-S masked-crop matching in batches of 32. This expensive scene search is
+explicitly restricted to initialization and relocalization; ordinary frames
+stay on the local tracker. Evaluator-only GT metrics on YCBInEOAT and HOT3D
+report proposal recall and matching accuracy separately so failures are not
+mixed.
 See [the initialization protocol](docs/reference_guided_initialization.md) and
 [failure taxonomy](docs/reference_matching_failure_analysis.md).
 

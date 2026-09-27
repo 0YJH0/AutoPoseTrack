@@ -26,6 +26,8 @@ class DINOv2ReferenceEncoder(ReferenceEncoder):
         model_name: str = "dinov2_vits14",
         device: str = "cuda:0",
         checkpoint: Optional[str] = None,
+        batch_size: int = 32,
+        use_fp16: bool = True,
     ) -> None:
         try:
             import torch
@@ -33,6 +35,10 @@ class DINOv2ReferenceEncoder(ReferenceEncoder):
             raise RuntimeError("DINOv2 requires PyTorch") from error
         self.torch = torch
         self.device = torch.device(device)
+        self.batch_size = batch_size
+        self.use_fp16 = use_fp16 and self.device.type == "cuda"
+        if batch_size <= 0:
+            raise ValueError("batch_size must be positive")
         if self.device.type == "cuda" and not torch.cuda.is_available():
             raise RuntimeError(f"DINOv2 requested {device}, but CUDA is unavailable")
         self.model = torch.hub.load("facebookresearch/dinov2", model_name)
@@ -56,11 +62,21 @@ class DINOv2ReferenceEncoder(ReferenceEncoder):
         if not images:
             return np.empty((0, 0), dtype=np.float32)
         torch = self.torch
+        descriptors = []
         with torch.inference_mode():
-            features = self.model.forward_features(self._batch(images))
-            descriptor = features["x_norm_clstoken"]
-            descriptor = torch.nn.functional.normalize(descriptor, dim=1)
-        return descriptor.float().cpu().numpy().astype(np.float32)
+            for start in range(0, len(images), self.batch_size):
+                with torch.autocast(
+                    device_type=self.device.type,
+                    dtype=torch.float16,
+                    enabled=self.use_fp16,
+                ):
+                    features = self.model.forward_features(
+                        self._batch(images[start : start + self.batch_size])
+                    )
+                    descriptor = features["x_norm_clstoken"]
+                    descriptor = torch.nn.functional.normalize(descriptor, dim=1)
+                descriptors.append(descriptor.float().cpu())
+        return torch.cat(descriptors).numpy().astype(np.float32)
 
     def encode_local(self, images):
         if not images:

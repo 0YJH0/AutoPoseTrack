@@ -8,15 +8,22 @@ tracking.
 ## Pipeline and boundaries
 
 1. A fixed reference RGB and its mask build `ReferenceMemory`.
-2. The official SAM automatic-mask generator processes the complete query RGB.
+2. FastSAM-s (default) processes the complete query RGB at 640 px; the original
+   SAM backend remains available as a quality/speed baseline.
 3. The same masked-crop preprocessing is applied to references and proposals.
-4. DINOv2 ViT-S/14 produces L2-normalized CLS descriptors.
+4. DINOv2 ViT-S/14 encodes proposal crops in FP16 batches of 32 and produces
+   L2-normalized CLS descriptors.
 5. Cosine matching ranks every proposal and logs the full ranking, best score,
    second score, margin, and matched reference id.
 6. Only after ranking is complete does the evaluator load the query GT mask.
 
 Query GT bbox, mask, and pose are never arguments of `ProposalGenerator`,
 `ReferenceEncoder`, or `GlobalReferenceMatcher`.
+
+The command accepts only `--mode initialization` and `--mode relocalization`.
+There is intentionally no tracking mode: normal frames must use the local
+tracker, so the full-frame proposal/matching cost is paid only while finding
+the object or recovering from failure.
 
 ## Dataset protocols
 
@@ -39,9 +46,14 @@ Query GT bbox, mask, and pose are never arguments of `ProposalGenerator`,
 
 ## Run
 
-Download the official SAM ViT-B checkpoint to
-`data/models/sam/sam_vit_b_01ec64.pth`. DINOv2 weights are downloaded by the
-official Torch Hub loader into `TORCH_HOME` on first use.
+Download the FastSAM-s checkpoint to `data/models/fastsam/FastSAM-s.pt`.
+DINOv2 weights are downloaded by the official Torch Hub loader into
+`TORCH_HOME` on first use. To reproduce the slower original SAM baseline,
+download SAM ViT-B to `data/models/sam/sam_vit_b_01ec64.pth` and select
+`configs/autoposetrack/reference_initialization.yaml`.
+
+The expected FastSAM-s SHA-256 is
+`c9f78716a81c7aff0d608ccc73e1b82ab3aaad86005049f6a92106a0be6d0844`.
 
 ```bash
 docker compose --profile motion build motion
@@ -50,6 +62,9 @@ docker compose --profile motion run --rm motion bash
 python -m scripts.run_reference_guided_initialization \
   --dataset ycbineoat \
   --input data/YCBInEOAT/cracker_box_reorient \
+  --config configs/autoposetrack/reference_initialization_fastsam.yaml \
+  --proposal-size 640 --max-proposals 50 \
+  --mode initialization \
   --reference-index 117 --query-start 127 --query-stride 10 \
   --max-queries 10 \
   --output outputs/ycbineoat_reference_init_v1
@@ -57,6 +72,9 @@ python -m scripts.run_reference_guided_initialization \
 python -m scripts.run_reference_guided_initialization \
   --dataset hot3d \
   --input outputs/hot3d_clip_001852_motion_cuda_v1/extracted_clip \
+  --config configs/autoposetrack/reference_initialization_fastsam.yaml \
+  --proposal-size 768 --max-proposals 30 \
+  --mode relocalization \
   --object-id 29 --stream-id 214-1 \
   --reference-index 0 --query-start 10 --query-stride 10 \
   --max-queries 10 \

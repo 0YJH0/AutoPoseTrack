@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from enum import Enum
 from typing import Tuple
 
 import numpy as np
@@ -20,7 +21,27 @@ class SegmentationProposal:
     source_id: int
 
 
+class ProposalInvocation(str, Enum):
+    INITIALIZATION = "initialization"
+    RELOCALIZATION = "relocalization"
+
+
 class ProposalGenerator(ABC):
     @abstractmethod
-    def generate(self, image: npt.NDArray[np.uint8]) -> list[SegmentationProposal]:
+    def generate(
+        self,
+        image: npt.NDArray[np.uint8],
+        invocation: ProposalInvocation = ProposalInvocation.INITIALIZATION,
+    ) -> list[SegmentationProposal]:
         """Generate class-agnostic masks from the full RGB frame."""
+
+    @staticmethod
+    def validate_invocation(invocation: ProposalInvocation) -> None:
+        if invocation not in {
+            ProposalInvocation.INITIALIZATION,
+            ProposalInvocation.RELOCALIZATION,
+        }:
+            raise ValueError(
+                "full-frame proposals are allowed only for initialization or "
+                "relocalization"
+            )

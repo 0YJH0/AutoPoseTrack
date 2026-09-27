@@ -10,17 +10,17 @@ reference:
   use_fp16: true
 
 proposal:
-  backend: sam
-  model_type: vit_b
-  checkpoint: data/models/sam/sam_vit_b_01ec64.pth
+  backend: fastsam
+  checkpoint: data/models/fastsam/FastSAM-s.pt
   device: cuda:0
-  points_per_side: 24
-  pred_iou_threshold: 0.72
-  stability_threshold: 0.78
+  inference_size: 640
+  confidence: 0.25
+  nms_iou: 0.9
+  use_fp16: true
   min_area: 100
   max_area_ratio: 0.8
   duplicate_iou: 0.9
-  max_proposals: 100
+  max_proposals: 50
 
 matching:
   aggregation: max

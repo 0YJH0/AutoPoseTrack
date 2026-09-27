@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run SAM + DINOv2 autonomous target discovery on YCBInEOAT or HOT3D."""
+"""Run lightweight full-frame proposals + DINOv2 target discovery."""
 
 from __future__ import annotations
 
@@ -16,7 +16,12 @@ from PIL import Image
 
 from autoposetrack.datasets import load_hot3d_discovery, load_ycbineoat_discovery
 from autoposetrack.evaluation.reference_discovery import evaluate_discovery
-from autoposetrack.proposal import ProposalFilterConfig, SamProposalGenerator
+from autoposetrack.proposal import (
+    FastSamProposalGenerator,
+    ProposalFilterConfig,
+    ProposalInvocation,
+    SamProposalGenerator,
+)
 from autoposetrack.reference import (
     CropConfig,
     DINOv2ReferenceEncoder,
@@ -37,13 +42,21 @@ def main():
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path("configs/autoposetrack/reference_initialization.yaml"),
+        default=Path("configs/autoposetrack/reference_initialization_fastsam.yaml"),
     )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--reference-index", action="append", type=int)
     parser.add_argument("--query-start", type=int, default=0)
     parser.add_argument("--query-stride", type=int, default=10)
     parser.add_argument("--max-queries", type=int, default=10)
+    parser.add_argument("--proposal-size", type=int, choices=(640, 768))
+    parser.add_argument("--max-proposals", type=int, choices=range(30, 51))
+    parser.add_argument(
+        "--mode",
+        choices=("initialization", "relocalization"),
+        default="initialization",
+        help="Full-frame proposals are deliberately unavailable in tracking mode.",
+    )
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=False)
     debug_dir = args.output / "debug"
@@ -70,30 +83,54 @@ def main():
     ref_cfg = cfg["reference"]
     proposal_cfg = cfg["proposal"]
     match_cfg = cfg["matching"]
+    backend = str(proposal_cfg.get("backend", "sam")).lower()
+    if args.proposal_size is not None:
+        if backend != "fastsam":
+            raise ValueError("--proposal-size is supported only by FastSAM")
+        proposal_cfg["inference_size"] = args.proposal_size
+    if args.max_proposals is not None:
+        proposal_cfg["max_proposals"] = args.max_proposals
     crop = CropConfig(
         float(ref_cfg["bbox_expansion"]),
         int(ref_cfg["crop_size"]),
         str(ref_cfg["background"]),
     )
     encoder = DINOv2ReferenceEncoder(
-        str(ref_cfg["encoder"]), str(ref_cfg["device"])
+        model_name=str(ref_cfg["encoder"]),
+        device=str(ref_cfg["device"]),
+        batch_size=int(ref_cfg.get("batch_size", 32)),
+        use_fp16=bool(ref_cfg.get("use_fp16", True)),
     )
     memory = ReferenceMemory.build(reference_frames, encoder, crop)
-    generator = SamProposalGenerator(
-        str(proposal_cfg["checkpoint"]),
-        str(proposal_cfg["model_type"]),
-        str(proposal_cfg["device"]),
-        int(proposal_cfg["points_per_side"]),
-        float(proposal_cfg["pred_iou_threshold"]),
-        float(proposal_cfg["stability_threshold"]),
-        ProposalFilterConfig(
-            int(proposal_cfg["min_area"]),
-            float(proposal_cfg["max_area_ratio"]),
-            float(proposal_cfg["stability_threshold"]),
-            float(proposal_cfg["duplicate_iou"]),
-            int(proposal_cfg["max_proposals"]),
-        ),
+    filter_config = ProposalFilterConfig(
+        int(proposal_cfg["min_area"]),
+        float(proposal_cfg["max_area_ratio"]),
+        float(proposal_cfg.get("stability_threshold", 0.0)),
+        float(proposal_cfg["duplicate_iou"]),
+        int(proposal_cfg["max_proposals"]),
     )
+    if backend == "fastsam":
+        generator = FastSamProposalGenerator(
+            str(proposal_cfg["checkpoint"]),
+            str(proposal_cfg["device"]),
+            int(proposal_cfg.get("inference_size", 640)),
+            float(proposal_cfg.get("confidence", 0.25)),
+            float(proposal_cfg.get("nms_iou", 0.9)),
+            bool(proposal_cfg.get("use_fp16", True)),
+            filter_config,
+        )
+    elif backend == "sam":
+        generator = SamProposalGenerator(
+            str(proposal_cfg["checkpoint"]),
+            str(proposal_cfg["model_type"]),
+            str(proposal_cfg["device"]),
+            int(proposal_cfg["points_per_side"]),
+            float(proposal_cfg["pred_iou_threshold"]),
+            float(proposal_cfg["stability_threshold"]),
+            filter_config,
+        )
+    else:
+        raise ValueError(f"unsupported proposal backend: {backend}")
     matcher = GlobalReferenceMatcher(
         encoder,
         crop,
@@ -116,7 +153,7 @@ def main():
         rgb = frame.rgb()
         started = time.perf_counter()
         proposal_started = time.perf_counter()
-        proposals = generator.generate(rgb)
+        proposals = generator.generate(rgb, ProposalInvocation(args.mode))
         proposal_time = time.perf_counter() - proposal_started
         match_started = time.perf_counter()
         result = matcher.match(rgb, proposals, memory)
@@ -154,6 +191,12 @@ def main():
     eligible = [row for row in rows if row["matching_eligible"]]
     summary = {
         "dataset": args.dataset, "object_id": frames[0].object_id, "reference_indices": reference_indices,
+        "mode": args.mode, "proposal_backend": backend,
+        "proposal_max_count": int(proposal_cfg["max_proposals"]),
+        "proposal_inference_size": proposal_cfg.get("inference_size"),
+        "reference_encoder": str(ref_cfg["encoder"]),
+        "reference_batch_size": int(ref_cfg.get("batch_size", 32)),
+        "reference_fp16": bool(ref_cfg.get("use_fp16", True)),
         "num_queries": len(rows), "oracle_proposal_recall": float(np.mean([row["oracle_proposal_recall"] for row in rows])),
         "matching_accuracy_given_oracle": float(np.mean([row["matching_correct"] for row in eligible])) if eligible else None,
         **{f"recall_at_{k}": float(np.mean([row[f"recall_at_{k}"] for row in rows])) for k in (1, 3, 5)},

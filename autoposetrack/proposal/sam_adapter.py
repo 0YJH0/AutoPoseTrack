@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .base import ProposalGenerator, SegmentationProposal
+from .base import ProposalGenerator, ProposalInvocation, SegmentationProposal
 from .filtering import ProposalFilterConfig, filter_proposals
 
 
@@ -37,7 +37,12 @@ class SamProposalGenerator(ProposalGenerator):
         )
         self.filter_config = filter_config
 
-    def generate(self, image):
+    def generate(
+        self,
+        image,
+        invocation: ProposalInvocation = ProposalInvocation.INITIALIZATION,
+    ):
+        self.validate_invocation(invocation)
         raw = self.generator.generate(image)
         proposals = []
         for source_id, item in enumerate(raw):
