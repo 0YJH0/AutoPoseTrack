@@ -58,6 +58,7 @@ services:
       - ${MOTION_INPUT_ROOT:-./data}:/data/motion-input:ro
     environment:
       TORCH_HOME: /workspace/AutoPoseTrack/data/models/torch
+      YOLO_CONFIG_DIR: /tmp
     command: bash
     stdin_open: true
     tty: true

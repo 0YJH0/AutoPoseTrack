@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 
@@ -21,7 +22,7 @@ class FastSamProposalGenerator(ProposalGenerator):
         confidence: float = 0.25,
         iou_threshold: float = 0.9,
         use_fp16: bool = True,
-        filter_config: ProposalFilterConfig = ProposalFilterConfig(),
+        filter_config: Optional[ProposalFilterConfig] = None,
     ) -> None:
         try:
             from ultralytics import FastSAM
@@ -37,7 +38,7 @@ class FastSamProposalGenerator(ProposalGenerator):
         self.confidence = confidence
         self.iou_threshold = iou_threshold
         self.use_fp16 = use_fp16
-        self.filter_config = filter_config
+        self.filter_config = filter_config or ProposalFilterConfig()
 
     def generate(
         self,

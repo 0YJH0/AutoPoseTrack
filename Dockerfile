@@ -14,7 +14,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /workspace/AutoPoseTrack
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git tini \
+    && apt-get install -y --no-install-recommends git libgl1 libglib2.0-0 tini \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy dependency metadata first so source edits reuse the dependency layer.
@@ -49,12 +49,12 @@ LABEL org.opencontainers.image.title="AutoPoseTrack RAFT Motion" \
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
 WORKDIR /workspace/AutoPoseTrack
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends git tini \
+    && apt-get install -y --no-install-recommends git libgl1 libglib2.0-0 tini \
     && rm -rf /var/lib/apt/lists/*
 COPY pyproject.toml README.md LICENSE ./
 COPY autoposetrack ./autoposetrack
 RUN python -m pip install --upgrade pip \
-    && python -m pip install ".[motion,motion-cuda,autonomous-init]"
+    && python -m pip install ".[dev,motion,motion-cuda,autonomous-init]"
 COPY configs ./configs
 COPY docs ./docs
 COPY scripts ./scripts

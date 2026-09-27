@@ -51,6 +51,7 @@ def main():
     parser.add_argument("--max-queries", type=int, default=10)
     parser.add_argument("--proposal-size", type=int, choices=(640, 768))
     parser.add_argument("--max-proposals", type=int, choices=range(30, 51))
+    parser.add_argument("--proposal-confidence", type=float)
     parser.add_argument(
         "--mode",
         choices=("initialization", "relocalization"),
@@ -90,6 +91,12 @@ def main():
         proposal_cfg["inference_size"] = args.proposal_size
     if args.max_proposals is not None:
         proposal_cfg["max_proposals"] = args.max_proposals
+    if args.proposal_confidence is not None:
+        if backend != "fastsam":
+            raise ValueError("--proposal-confidence is supported only by FastSAM")
+        if not 0.0 < args.proposal_confidence <= 1.0:
+            raise ValueError("--proposal-confidence must be in (0, 1]")
+        proposal_cfg["confidence"] = args.proposal_confidence
     crop = CropConfig(
         float(ref_cfg["bbox_expansion"]),
         int(ref_cfg["crop_size"]),
@@ -194,6 +201,7 @@ def main():
         "mode": args.mode, "proposal_backend": backend,
         "proposal_max_count": int(proposal_cfg["max_proposals"]),
         "proposal_inference_size": proposal_cfg.get("inference_size"),
+        "proposal_confidence": proposal_cfg.get("confidence"),
         "reference_encoder": str(ref_cfg["encoder"]),
         "reference_batch_size": int(ref_cfg.get("batch_size", 32)),
         "reference_fp16": bool(ref_cfg.get("use_fp16", True)),

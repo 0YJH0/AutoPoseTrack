@@ -24,6 +24,7 @@ motion = ["opencv-python-headless>=4.8,<4.11"]
 motion-cuda = ["torch>=2.2,<2.3", "torchvision>=0.17,<0.18"]
 autonomous-init = [
   "segment-anything @ git+https://github.com/facebookresearch/segment-anything.git@dca509fe793f601edb92606367a655c15ac00fdf",
+  "opencv-python>=4.8,<4.11",
   "ultralytics>=8.3,<9",
 ]
 

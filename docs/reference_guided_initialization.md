@@ -114,3 +114,18 @@ The first deterministic three-query pilot produced:
 This is a smoke-scale result only. It proves that both adapters and the
 GT-isolated evaluation path run end to end; it is not sufficient for a paper
 claim or threshold tuning.
+
+## FastSAM smoke result and boundary
+
+On the local RTX 4060, one YCBInEOAT query at 640/Top-50 was recovered with
+mask IoU 0.837. FastSAM took 1.42 s and the batched FP16 DINOv2-S match took
+0.16 s (1.59 s total, including first-inference warm-up). On the tested HOT3D
+query, neither 640 nor 768 reached the 0.5 proposal-IoU criterion; increasing
+resolution improved best proposal IoU only from 0.186 to 0.200. Lowering the
+FastSAM confidence to 0.10 did not recover the small hand-held target.
+
+Therefore 640/Top-50 is the default fast path, but FastSAM proposal coverage
+must be logged separately and must not be described as universally replacing
+SAM. HOT3D needs either the retained high-recall SAM fallback, an
+EfficientViT-SAM adapter, or a reference-conditioned ROI proposal stage.
+`--proposal-confidence` is exposed for diagnostics, not as a demonstrated fix.

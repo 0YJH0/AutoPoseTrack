@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 
@@ -19,7 +20,7 @@ class SamProposalGenerator(ProposalGenerator):
         points_per_side: int = 24,
         pred_iou_thresh: float = 0.72,
         stability_score_thresh: float = 0.78,
-        filter_config: ProposalFilterConfig = ProposalFilterConfig(),
+        filter_config: Optional[ProposalFilterConfig] = None,
     ) -> None:
         try:
             from segment_anything import SamAutomaticMaskGenerator, sam_model_registry
@@ -35,7 +36,7 @@ class SamProposalGenerator(ProposalGenerator):
             stability_score_thresh=stability_score_thresh,
             output_mode="binary_mask",
         )
-        self.filter_config = filter_config
+        self.filter_config = filter_config or ProposalFilterConfig()
 
     def generate(
         self,
